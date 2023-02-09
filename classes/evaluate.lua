@@ -9,20 +9,19 @@ database.database = assert(database.OpenDatabase())
 
 local evaluate = {}
 
-evaluate.check_can_loot = function(member, item, preference, settings)
-	local can_loot = inventory.check_group_member(member, preference.list, settings.dannet_delay, settings.always_loot)
+evaluate.check_can_loot = function(member, item, preference, save_slots, dannet_delay, always_loot)
+	local can_loot = inventory.check_group_member(member, preference.list, dannet_delay, always_loot)
 
 	if can_loot then
-		can_loot = inventory.check_inventory(member, item, settings.save_slots, settings.dannet_delay)
+		can_loot = inventory.check_inventory(member, item, save_slots, dannet_delay)
 	end
 
 	if can_loot then
-		can_loot =
-			inventory.check_quantity(member, item, preference.quantity, settings.dannet_delay, settings.always_loot)
+		can_loot = inventory.check_quantity(member, item, preference.quantity, dannet_delay, always_loot)
 	end
 
 	if can_loot then
-		can_loot = inventory.check_lore(member, item, settings.dannet_delay)
+		can_loot = inventory.check_lore(member, item, dannet_delay)
 	end
 
 	return can_loot
@@ -60,18 +59,21 @@ evaluate.check_loot_items = function(item, loot_items)
 	return preference
 end
 
-evaluate.check_loot_sets = function(item, loot_conditions, loot_sets, char_sets)
+evaluate.check_loot_rules = function(item, loot_conditions, loot_rules, char_rules)
 	local preference = nil
 
-	for i in ipairs(char_sets) do
-		local set = char_sets[i]
-		if set.enabled and loot_sets[set.name].loaded then
-			if loot_sets[set.name][loader.types.items] then
-				preference = evaluate.check_loot_items(item, loot_sets[set.name][loader.types.items])
+	for i in ipairs(char_rules) do
+		local rule = char_rules[i]
+		if rule.enabled and loot_rules[rule.name].loaded then
+			if loot_rules[rule.name][loader.types.items] then
+				preference = evaluate.check_loot_items(item, loot_rules[rule.name][loader.types.items])
 			end
-			if preference == nil and loot_sets[set.name][loader.types.conditions] then
-				preference =
-					evaluate.check_loot_conditions(item, loot_conditions, loot_sets[set.name][loader.types.conditions])
+			if preference == nil and loot_rules[rule.name][loader.types.conditions] then
+				preference = evaluate.check_loot_conditions(
+					item,
+					loot_conditions,
+					loot_rules[rule.name][loader.types.conditions]
+				)
 			end
 			if preference then
 				break
@@ -121,17 +123,16 @@ end
 evaluate.get_loot_preference = function(item, loot, char_settings, unmatched_item_rule)
 	local preference = nil
 
-	if loot.loot_items then
-		preference = evaluate.check_loot_items(item, loot.loot_items)
+	if loot.items then
+		preference = evaluate.check_loot_items(item, loot.items)
 	end
 
 	if preference == nil and char_settings[loader.types.items] then
 		preference = evaluate.check_loot_items(item, char_settings[loader.types.items])
 	end
 
-	if preference == nil and char_settings[loader.types.sets] then
-		preference =
-			evaluate.check_loot_sets(item, loot.loot_conditions, loot.loot_sets, char_settings[loader.types.sets])
+	if preference == nil and char_settings[loader.types.rules] then
+		preference = evaluate.check_loot_rules(item, loot.conditions, loot.rules, char_settings[loader.types.rules])
 	end
 
 	if preference == nil and unmatched_item_rule then

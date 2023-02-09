@@ -8,14 +8,14 @@ local LIP = require("yalm.lib.LIP")
 local utils = require("yalm.lib.utils")
 
 local function action(loot, char_settings, global_settings, args)
-	Write.Info("Converting Lootly file...")
-
 	local lootly_file = ("%s/Lootly_Loot.ini"):format(mq.configDir)
 
 	if not utils.FileExists(lootly_file) then
 		Write.Error("Lootly loot file does not exist")
 		return
 	end
+
+	Write.Info("Converting Lootly file...")
 
 	local inifile = LIP.load(lootly_file)
 
@@ -29,7 +29,7 @@ local function action(loot, char_settings, global_settings, args)
 		end
 	end
 
-	settings.update_and_save_global_settings(global_settings, loader.types.items, items)
+	settings.update_and_save_global_settings(loot, loader.types.items, items)
 
 	Write.Info("Finished converting")
 end

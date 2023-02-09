@@ -5,6 +5,19 @@ local lfs = PackageMan.Require("luafilesystem", "lfs")
 
 local utils = {}
 
+utils.CopyFile = function(source, dest)
+	local f = io.open(source, "r")
+	local contents = f:read("*a")
+	io.close(f)
+	f = io.open(dest, "w")
+	f:write(contents)
+	io.close(f)
+end
+
+utils.DeleteFile = function(source)
+	os.remove(source)
+end
+
 utils.FileExists = function(path)
 	local f = io.open(path, "r")
 	if f ~= nil then

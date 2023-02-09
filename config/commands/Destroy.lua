@@ -8,7 +8,7 @@ local function can_destroy_item(item, loot, char_settings, global_settings)
 		local preference = evaluate.get_loot_preference(item, loot, char_settings, global_settings.unmatched_item_rule)
 
 		if preference then
-			local loot_preference = loot.loot_preferences[preference.setting]
+			local loot_preference = loot.preferences[preference.setting]
 			if loot_preference and loot_preference.name == "Destroy" then
 				if not evaluate.is_item_in_saved_slot(item, char_settings) then
 					return true

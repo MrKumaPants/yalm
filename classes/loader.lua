@@ -7,7 +7,7 @@ local loader = {
 		conditions = "conditions",
 		items = "items",
 		preferences = "preferences",
-		sets = "sets",
+		rules = "rules",
 	},
 }
 
@@ -26,10 +26,10 @@ end
 loader.should_load = function(rule, loot_type, char_settings)
 	if loot_type == loader.types.commands or loot_type == loader.types.conditions then
 		return true
-	elseif loot_type == loader.types.sets then
+	elseif loot_type == loader.types.rules then
 		for i in ipairs(char_settings[loot_type]) do
-			local set = char_settings[loot_type][i]
-			if rule.name == set.name and set.enabled then
+			local rule = char_settings[loot_type][i]
+			if rule.name == rule.name and rule.enabled then
 				return true
 			end
 		end
@@ -74,7 +74,7 @@ loader.load = function(rule, loot_type)
 				)
 				return
 			end
-		elseif loot_type == loader.types.sets then
+		elseif loot_type == loader.types.rules then
 			rule.conditions = result.conditions
 			rule.items = result.items
 		end

@@ -34,7 +34,7 @@ local function toggle_set(set, loot_type)
 end
 
 local function find_loot_command(command)
-	for _, loot_command in pairs(loot.loot_commands) do
+	for _, loot_command in pairs(loot.commands) do
 		if loot_command.trigger == command then
 			return loot_command
 		end
@@ -47,12 +47,21 @@ local function print_help()
 	Write.Help("\at[\ax\ayYet Another Loot Manager v%s\ax\at]\ax", version)
 	Write.Help("\axCommands Available:")
 	Write.Help("\t  \ay/yalm help\ax -- Display this help output")
-	Write.Help("\t  \ay/yalm set <set_name> [on|1|true|off|0|false]\ax -- Toggle the named set on/off")
+	--Write.Help("\t  \ay/yalm set <set_name> [on|1|true|off|0|false]\ax -- Toggle the named set on/off")
 	Write.Help("\t  \ay/yalm reload\ax -- Reload settings (Currently just restarts the script)")
 	Write.Help("\axUser Commands Available:")
-	for _, command in pairs(loot.loot_commands) do
+	for _, command in pairs(loot.commands) do
 		if command.loaded then
-			Write.Help("\t  \ay/yalm %s\ax -- %s", command.trigger, command.help)
+			local message = ("\t  \ay/yalm %s"):format(command.trigger)
+			if command.args then
+				message = ("%s %s\ax"):format(message, command.args)
+			else
+				message = ("%s\ax"):format(message)
+			end
+			if command.help then
+				message = ("%s -- %s"):format(message, command.help)
+			end
+			Write.Help(message)
 		end
 	end
 end
@@ -73,24 +82,6 @@ local function cmd_handler(...)
 
 	if command == "help" then
 		print_help()
-	elseif command == "set" then
-		if #args < 2 then
-			return
-		end
-		local set_name = args[2]
-		local enable
-		if #args > 2 then
-			enable = args[3]
-		end
-		local set = loot.loot_sets[set_name]
-		if set then
-			if enable and ON_VALUES[enable] and char_settings.categories[set_name] then
-				return -- event is already on, do nothing
-			elseif enable and OFF_VALUES[enable] and not char_settings.categories[set_name] then
-				return -- event is already off, do nothing
-			end
-			toggle_set(set, loader.types.sets)
-		end
 	elseif command == "reload" then
 		mq.cmd("/timed 10 /lua run yalm")
 		state.terminate = true
@@ -111,21 +102,21 @@ local function initialize()
 	global_settings, char_settings = settings.init_settings()
 
 	loot = {
-		["loot_categories"] = global_settings.categories or {},
-		["loot_commands"] = global_settings.commands or {},
-		["loot_conditions"] = global_settings.conditions or {},
-		["loot_items"] = global_settings.items or {},
-		["loot_preferences"] = global_settings.preferences or {},
-		["loot_sets"] = global_settings.sets or {},
+		["categories"] = global_settings.categories or {},
+		["commands"] = global_settings.commands or {},
+		["conditions"] = global_settings.conditions or {},
+		["items"] = global_settings.items or {},
+		["preferences"] = global_settings.preferences or {},
+		["rules"] = global_settings.rules or {},
 	}
 end
 
 initialize()
 
 while not state.terminate do
-	loader.manage(loot.loot_commands, loader.types.commands, char_settings)
-	loader.manage(loot.loot_conditions, loader.types.conditions, char_settings)
-	loader.manage(loot.loot_sets, loader.types.sets, char_settings)
+	loader.manage(loot.commands, loader.types.commands, char_settings)
+	loader.manage(loot.conditions, loader.types.conditions, char_settings)
+	loader.manage(loot.rules, loader.types.rules, char_settings)
 
 	looting.handle_master_looting(loot, global_settings.settings, char_settings)
 	looting.handle_personal_loot()

@@ -71,7 +71,7 @@ looting.get_valid_member = function(tlo, index)
 	return member
 end
 
-looting.get_member_can_loot = function(item, preference, settings)
+looting.get_member_can_loot = function(item, preference, save_slots, dannet_delay, always_loot)
 	local group_or_raid_tlo = looting.get_group_or_raid_tlo()
 
 	local can_loot = false
@@ -83,7 +83,7 @@ looting.get_member_can_loot = function(item, preference, settings)
 		member = looting.get_valid_member(group_or_raid_tlo, i)
 
 		if member then
-			can_loot = evaluate.check_can_loot(member, item, preference, settings)
+			can_loot = evaluate.check_can_loot(member, item, preference, save_slots, dannet_delay, always_loot)
 
 			if can_loot then
 				break
@@ -120,13 +120,13 @@ looting.handle_master_looting = function(loot, settings, char_settings)
 		return
 	end
 
-	if not evaluate.is_valid_preference(loot.loot_preferences, preference) then
+	if not evaluate.is_valid_preference(loot.preferences, preference) then
 		Write.Warn("Invalid loot preference for \a-t%s\ax", item_name)
 		looting.leave_item()
 		return
 	end
 
-	if loot.loot_preferences[preference.setting].leave then
+	if loot.preferences[preference.setting].leave then
 		Write.Info("Loot preference set to \aoleave\ax for \a-t%s\ax", item_name)
 		looting.leave_item()
 		return
@@ -134,12 +134,18 @@ looting.handle_master_looting = function(loot, settings, char_settings)
 
 	Write.Info("\a-t%s\ax passes with %s", item_name, utils.GetItemPreferenceString(preference))
 
-	local can_loot, member = looting.get_member_can_loot(item, preference, settings)
+	local can_loot, member = looting.get_member_can_loot(item, preference, settings.save_slots, settings.dannet_delay)
 
 	if not can_loot and settings.always_loot then
 		Write.Warn("No one matched \a-t%s\ax loot preference", item_name)
 		Write.Warn("Trying again ignoring quantity and list")
-		can_loot, member = looting.get_member_can_loot(item, preference, settings)
+		can_loot, member = looting.get_member_can_loot(
+			item,
+			preference,
+			settings.save_slots,
+			settings.dannet_delay,
+			settings.always_loot
+		)
 	end
 
 	if not can_loot then

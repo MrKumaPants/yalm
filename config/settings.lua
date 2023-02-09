@@ -8,42 +8,71 @@ local utils = require("yalm.lib.utils")
 
 -- default application settings
 local default_settings = {
-	["categories"] = {},
+	["categories"] = {
+		[1] = "Configuration",
+		[2] = "Item",
+	},
 	["commands"] = {
 		["Buy"] = {
 			["name"] = "Buy",
 			["trigger"] = "buy",
 			["help"] = "Buys designated items from the targeted merchant",
+			["category"] = "Item",
 		},
 		["Check"] = {
 			["name"] = "Check",
 			["trigger"] = "check",
-			["help"] = "Print loot preference for all items in inventory",
+			["help"] = "Print loot preference for all items in inventory or item on cursor",
+			["category"] = "Item",
+		},
+		["Command"] = {
+			["name"] = "Command",
+			["trigger"] = "command",
+			["help"] = "Manage commands. Type \ay/yalm command help\ax for more information.",
+			["category"] = "Configuration",
+		},
+		["Condition"] = {
+			["name"] = "Condition",
+			["trigger"] = "condition",
+			["help"] = "Manage conditions. Type \ay/yalm condition help\ax for more information.",
+			["category"] = "Configuration",
 		},
 		["Convert"] = {
 			["name"] = "Convert",
 			["trigger"] = "convert",
 			["help"] = "Convert Lootly loot file to YALM",
+			["category"] = "Item",
 		},
 		["Destroy"] = {
 			["name"] = "Destroy",
 			["trigger"] = "destroy",
 			["help"] = "Destroy any designated items in your bags",
+			["category"] = "Item",
 		},
 		["Guild"] = {
 			["name"] = "Guild",
 			["trigger"] = "guild",
 			["help"] = "Deposits designated items into the guild bank",
+			["category"] = "Item",
+		},
+		["Rule"] = {
+			["name"] = "Rule",
+			["trigger"] = "rule",
+			["help"] = "Manage rules. Type \ay/yalm rule help\ax for more information.",
+			["category"] = "Configuration",
 		},
 		["Sell"] = {
 			["name"] = "Sell",
 			["trigger"] = "sell",
 			["help"] = "Sells designated items to the targeted merchant",
+			["category"] = "Item",
 		},
 		["SetItem"] = {
+			["args"] = "<item> <preference> (all|me)",
 			["name"] = "SetItem",
 			["trigger"] = "setitem",
 			["help"] = "Set loot preference for item on cursor or by name",
+			["category"] = "Item",
 		},
 	},
 	["conditions"] = {},
@@ -54,7 +83,7 @@ local default_settings = {
 		["frequency"] = 250,
 		["save_slots"] = 3,
 		["unmatched_item_delay"] = "10s",
-		["dannet_delay"] = 150,
+		["dannet_delay"] = 250,
 		["unmatched_item_rule"] = {
 			["setting"] = "Keep",
 		},
@@ -81,7 +110,7 @@ local default_settings = {
 			["name"] = "Sell",
 		},
 	},
-	["sets"] = {},
+	["rules"] = {},
 }
 
 local settings = {}
@@ -98,12 +127,24 @@ settings.init_char_settings = function()
 		char_settings = {
 			items = {},
 			settings = {},
-			sets = {},
+			rules = {},
 		}
 		settings.save_character_settings(char_settings)
 	else
 		local module, error = loadfile(filename)()
 		char_settings = module
+	end
+
+	if not char_settings["items"] then
+		char_settings["items"] = {}
+	end
+
+	if not char_settings["settings"] then
+		char_settings["settings"] = {}
+	end
+
+	if not char_settings["rules"] then
+		char_settings["rules"] = {}
 	end
 
 	return char_settings
@@ -122,7 +163,7 @@ settings.init_global_settings = function()
 		global_settings = module
 	end
 
-	local default_copy = utils.ShallowCopy(default_settings)
+	local default_copy = utils.TableClone(default_settings)
 	global_settings = utils.Merge(default_copy, global_settings)
 
 	return global_settings
@@ -152,6 +193,18 @@ settings.save_character_settings = function(char_settings)
 	)
 end
 
+settings.remove_global_settings = function(type, key)
+	if not loader.types[type] then
+		Write.Error("%s is not a valid global key", type)
+		return
+	end
+
+	local global_settings = settings.init_global_settings()
+
+	global_settings[type][key] = nil
+	settings.save_global_settings(global_settings)
+end
+
 settings.set_global_settings = function(type, tables)
 	if not loader.types[type] then
 		Write.Error("%s is not a valid global key", type)
@@ -164,6 +217,16 @@ settings.set_global_settings = function(type, tables)
 	settings.save_global_settings(global_settings)
 end
 
+settings.remove_and_save_global_settings = function(global_settings, type, key)
+	if not loader.types[type] then
+		Write.Error("%s is not a valid global key", type)
+		return
+	end
+
+	global_settings[type][key] = nil
+	settings.remove_global_settings(type, key)
+end
+
 settings.update_and_save_global_settings = function(global_settings, type, tables)
 	if not loader.types[type] then
 		Write.Error("%s is not a valid global key", type)
@@ -171,7 +234,7 @@ settings.update_and_save_global_settings = function(global_settings, type, table
 	end
 
 	utils.Merge(global_settings[type], tables)
-	settings.set_global_setting(type, tables)
+	settings.set_global_settings(type, tables)
 end
 
 return settings
