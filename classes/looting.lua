@@ -5,6 +5,7 @@ local inventory = require("yalm.classes.inventory")
 local evaluate = require("yalm.classes.evaluate")
 
 local utils = require("yalm.lib.utils")
+local inspect = require("yalm.lib.inspect")
 
 local looting = {}
 
@@ -71,30 +72,48 @@ looting.get_valid_member = function(tlo, index)
 	return member
 end
 
-looting.get_member_can_loot = function(item, preference, save_slots, dannet_delay, always_loot)
+looting.get_member_can_loot = function(item, loot, save_slots, dannet_delay, always_loot, unmatched_item_rule)
 	local group_or_raid_tlo = looting.get_group_or_raid_tlo()
 
-	local can_loot = false
-	local member = nil
+	local can_loot, member, preference = false, nil, nil
+	local check_unmatched = nil
 
 	local count = looting.get_member_count(group_or_raid_tlo)
 
-	for i = 0, (count - 1) do
-		member = looting.get_valid_member(group_or_raid_tlo, i)
+	for i = 1, 2 do
+		for j = 0, (count - 1) do
+			member = looting.get_valid_member(group_or_raid_tlo, j)
 
-		if member then
-			can_loot = evaluate.check_can_loot(member, item, preference, save_slots, dannet_delay, always_loot)
+			if member then
+				can_loot, preference = evaluate.check_can_loot(
+					member,
+					item,
+					loot,
+					save_slots,
+					dannet_delay,
+					always_loot,
+					check_unmatched and unmatched_item_rule or nil
+				)
 
-			if can_loot then
-				break
+				if can_loot then
+					break
+				end
 			end
+		end
+
+		if can_loot then
+			break
+		end
+
+		if preference == nil then
+			check_unmatched = true
 		end
 	end
 
-	return can_loot, member
+	return can_loot, member, preference
 end
 
-looting.handle_master_looting = function(loot, settings, char_settings)
+looting.handle_master_looting = function(global_settings)
 	if not looting.am_i_master_looter() then
 		return
 	end
@@ -112,41 +131,48 @@ looting.handle_master_looting = function(loot, settings, char_settings)
 		return
 	end
 
-	local preference = evaluate.get_loot_preference(item, loot, char_settings, settings.unmatched_item_rule)
+	local can_loot, member, preference = looting.get_member_can_loot(
+		item,
+		global_settings,
+		global_settings.settings.save_slots,
+		global_settings.settings.dannet_delay,
+		false,
+		global_settings.settings.unmatched_item_rule
+	)
+
+	if not can_loot and global_settings.always_loot and not preference then
+		Write.Warn("No one matched \a-t%s\ax loot preference", item.Name())
+		Write.Warn("Trying again ignoring quantity and list")
+
+		can_loot, member, preference = looting.get_member_can_loot(
+			item,
+			global_settings,
+			global_settings.settings.save_slots,
+			global_settings.settings.dannet_delay,
+			global_settings.settings.always_loot,
+			global_settings.settings.unmatched_item_rule
+		)
+	end
 
 	if not preference then
 		Write.Warn("No loot preference found for \a-t%s\ax", item_name)
-		looting.leave_item()
+		-- looting.leave_item()
 		return
 	end
 
-	if not evaluate.is_valid_preference(loot.preferences, preference) then
+	if not evaluate.is_valid_preference(global_settings.preferences, preference) then
 		Write.Warn("Invalid loot preference for \a-t%s\ax", item_name)
 		looting.leave_item()
 		return
 	end
 
-	if loot.preferences[preference.setting].leave then
+	if global_settings.preferences[preference.setting].leave then
 		Write.Info("Loot preference set to \aoleave\ax for \a-t%s\ax", item_name)
 		looting.leave_item()
 		return
 	end
 
 	Write.Info("\a-t%s\ax passes with %s", item_name, utils.GetItemPreferenceString(preference))
-
-	local can_loot, member = looting.get_member_can_loot(item, preference, settings.save_slots, settings.dannet_delay)
-
-	if not can_loot and settings.always_loot then
-		Write.Warn("No one matched \a-t%s\ax loot preference", item_name)
-		Write.Warn("Trying again ignoring quantity and list")
-		can_loot, member = looting.get_member_can_loot(
-			item,
-			preference,
-			settings.save_slots,
-			settings.dannet_delay,
-			settings.always_loot
-		)
-	end
 
 	if not can_loot then
 		Write.Warn("No one is able to loot \a-t%s\ax", item_name)
@@ -158,7 +184,7 @@ looting.handle_master_looting = function(loot, settings, char_settings)
 		Write.Info("Giving \a-t%s\ax to \ao%s\ax", item_name, member)
 		looting.give_item(member)
 		mq.doevents()
-		mq.delay(settings.distribute_delay)
+		mq.delay(global_settings.distribute_delay)
 	end
 end
 

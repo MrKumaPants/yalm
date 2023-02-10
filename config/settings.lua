@@ -115,13 +115,13 @@ local default_settings = {
 
 local settings = {}
 
-settings.init_char_settings = function()
+settings.init_character_settings = function(character)
 	local char_settings
 
 	local filename = ("%s/YALM/yalm-%s-%s.lua"):format(
 		mq.configDir,
 		mq.TLO.EverQuest.Server(),
-		mq.TLO.Me.CleanName():lower()
+		character or mq.TLO.Me.CleanName():lower()
 	)
 	if not utils.FileExists(filename) then
 		char_settings = {
@@ -169,11 +169,11 @@ settings.init_global_settings = function()
 	return global_settings
 end
 
-settings.init_settings = function()
+settings.init_settings = function(character)
 	assert(utils.MakeDir(mq.configDir, "YALM"))
 
 	local global_settings = settings.init_global_settings()
-	local char_settings = settings.init_char_settings()
+	local char_settings = settings.init_character_settings(character)
 
 	if char_settings.settings then
 		utils.Merge(global_settings.settings, char_settings.settings)
@@ -182,8 +182,8 @@ settings.init_settings = function()
 	return global_settings, char_settings
 end
 
-settings.save_global_settings = function(settings)
-	persistence.store(("%s/YALM.lua"):format(mq.configDir), settings)
+settings.save_global_settings = function(global_settings)
+	persistence.store(("%s/YALM.lua"):format(mq.configDir), global_settings)
 end
 
 settings.save_character_settings = function(char_settings)

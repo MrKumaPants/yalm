@@ -1,16 +1,29 @@
+--- @type Mq
+local mq = require("mq")
+
 local Item = require("yalm.classes.item")
 local inventory = require("yalm.classes.inventory")
 local loader = require("yalm.classes.loader")
 
+local settings = require("yalm.config.settings")
+
 local database = require("yalm.lib.database")
 local utils = require("yalm.lib.utils")
+
+local inspect = require("yalm.lib.inspect")
 
 database.database = assert(database.OpenDatabase())
 
 local evaluate = {}
 
-evaluate.check_can_loot = function(member, item, preference, save_slots, dannet_delay, always_loot)
-	local can_loot = inventory.check_group_member(member, preference.list, dannet_delay, always_loot)
+evaluate.check_can_loot = function(member, item, loot, save_slots, dannet_delay, always_loot, unmatched_item_rule)
+	local preference = evaluate.get_loot_preference_for_member(member, item, loot, unmatched_item_rule)
+
+	local can_loot = evaluate.check_loot_preference(preference, loot)
+
+	if can_loot then
+		can_loot = inventory.check_group_member(member, preference.list, dannet_delay, always_loot)
+	end
 
 	if can_loot then
 		can_loot = inventory.check_inventory(member, item, save_slots, dannet_delay)
@@ -24,7 +37,7 @@ evaluate.check_can_loot = function(member, item, preference, save_slots, dannet_
 		can_loot = inventory.check_lore(member, item, dannet_delay)
 	end
 
-	return can_loot
+	return can_loot, preference
 end
 
 evaluate.check_loot_conditions = function(item, loot_conditions, set_conditions)
@@ -57,6 +70,22 @@ evaluate.check_loot_items = function(item, loot_items)
 	end
 
 	return preference
+end
+
+evaluate.check_loot_preference = function(preference, loot)
+	if not preference then
+		return false
+	end
+
+	if not evaluate.is_valid_preference(loot.preferences, preference) then
+		return false
+	end
+
+	if loot.preferences[preference.setting].leave then
+		return false
+	end
+
+	return true
 end
 
 evaluate.check_loot_rules = function(item, loot_conditions, loot_rules, char_rules)
@@ -118,6 +147,22 @@ evaluate.convert_rule_preference = function(item, preference)
 	end
 
 	return converted
+end
+
+evaluate.get_loot_preference_for_member = function(member, item, loot, unmatched_item_rule)
+	local merged_unmatched_item_rule = nil
+
+	local char_name = member.CleanName():lower()
+
+	local char_settings = settings.init_character_settings(char_name)
+
+	if unmatched_item_rule then
+		merged_unmatched_item_rule = char_settings.unmatched_item_rule or unmatched_item_rule
+	end
+
+	local preference = evaluate.get_loot_preference(item, loot, char_settings, merged_unmatched_item_rule)
+
+	return preference
 end
 
 evaluate.get_loot_preference = function(item, loot, char_settings, unmatched_item_rule)

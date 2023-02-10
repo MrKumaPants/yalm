@@ -3,31 +3,35 @@ local multiRefObjects = {} -- multiRefObjects
 local obj1 = {
 	["conditions"] = {
 		[1] = {
+			["name"] = "Money",
+			["setting"] = "Sell",
+		},
+		[2] = {
 			["name"] = "Quest",
 			["setting"] = "Destroy",
 		},
-		[2] = {
+		[3] = {
 			["name"] = "Augmentation",
 			["setting"] = "Destroy",
 		},
-		[3] = {
+		[4] = {
 			["name"] = "Poisons",
 			["setting"] = "Destroy",
 		},
-		[4] = {
+		[5] = {
 			["name"] = "FoodDrink",
 			["setting"] = "Keep",
 		},
-		[5] = {
+		[6] = {
 			["name"] = "Temporary",
 			["setting"] = "Destroy",
 		},
-		[6] = {
+		[7] = {
 			["name"] = "Scrolls",
 			["setting"] = "Keep",
 			["quantity"] = 1,
 		},
-		[7] = {
+		[8] = {
 			["name"] = "Collectible",
 			["setting"] = "Keep",
 			["quantity"] = 1,

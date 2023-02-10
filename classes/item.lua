@@ -273,7 +273,7 @@ Item.RequiredLevel = function()
 end
 
 Item.SellPrice = function()
-	return Item.item_db.price
+	return nil
 end
 
 Item.StackSize = function()
@@ -286,6 +286,10 @@ end
 
 Item.Type = function()
 	return ItemTypes[Item.item_db.itemtype + 1]
+end
+
+Item.Value = function()
+	return Item.item_db.price
 end
 
 Item.WornSlot = function(slot)

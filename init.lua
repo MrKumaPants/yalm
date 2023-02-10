@@ -12,7 +12,7 @@ local settings = require("yalm.config.settings")
 
 local utils = require("yalm.lib.utils")
 
-local version = "0.1"
+local version = "0.4.1"
 
 -- application state
 local state = {
@@ -26,7 +26,7 @@ local state = {
 	},
 }
 
-local loot, global_settings, char_settings
+local global_settings, char_settings
 
 local function toggle_set(set, loot_type)
 	char_settings[loot_type][set.name] = not char_settings[set][set.name]
@@ -34,7 +34,7 @@ local function toggle_set(set, loot_type)
 end
 
 local function find_loot_command(command)
-	for _, loot_command in pairs(loot.commands) do
+	for _, loot_command in pairs(global_settings.commands) do
 		if loot_command.trigger == command then
 			return loot_command
 		end
@@ -50,7 +50,7 @@ local function print_help()
 	--Write.Help("\t  \ay/yalm set <set_name> [on|1|true|off|0|false]\ax -- Toggle the named set on/off")
 	Write.Help("\t  \ay/yalm reload\ax -- Reload settings (Currently just restarts the script)")
 	Write.Help("\axUser Commands Available:")
-	for _, command in pairs(loot.commands) do
+	for _, command in pairs(global_settings.commands) do
 		if command.loaded then
 			local message = ("\t  \ay/yalm %s"):format(command.trigger)
 			if command.args then
@@ -87,7 +87,7 @@ local function cmd_handler(...)
 		state.terminate = true
 	elseif loot_command and loot_command.loaded then
 		local success, result =
-			pcall(loot_command.func.action_func, loot, char_settings, global_settings.settings, args)
+			pcall(loot_command.func.action_func, global_settings, char_settings, global_settings.settings, args)
 		if not success then
 			Write.Warn("Running command failed: %s - %s", loot_command.name, result)
 		end
@@ -100,25 +100,16 @@ local function initialize()
 	mq.bind("/yalm", cmd_handler)
 
 	global_settings, char_settings = settings.init_settings()
-
-	loot = {
-		["categories"] = global_settings.categories or {},
-		["commands"] = global_settings.commands or {},
-		["conditions"] = global_settings.conditions or {},
-		["items"] = global_settings.items or {},
-		["preferences"] = global_settings.preferences or {},
-		["rules"] = global_settings.rules or {},
-	}
 end
 
 initialize()
 
 while not state.terminate do
-	loader.manage(loot.commands, loader.types.commands, char_settings)
-	loader.manage(loot.conditions, loader.types.conditions, char_settings)
-	loader.manage(loot.rules, loader.types.rules, char_settings)
+	loader.manage(global_settings.commands, loader.types.commands, char_settings)
+	loader.manage(global_settings.conditions, loader.types.conditions, char_settings)
+	loader.manage(global_settings.rules, loader.types.rules, char_settings)
 
-	looting.handle_master_looting(loot, global_settings.settings, char_settings)
+	looting.handle_master_looting(global_settings)
 	looting.handle_personal_loot()
 
 	mq.doevents()
