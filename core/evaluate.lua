@@ -1,18 +1,12 @@
---- @type Mq
-local mq = require("mq")
-
-local Item = require("yalm.classes.item")
-local inventory = require("yalm.classes.inventory")
-local loader = require("yalm.classes.loader")
-
 local settings = require("yalm.config.settings")
+
+local inventory = require("yalm.core.inventory")
+local loader = require("yalm.core.loader")
+
+local Item = require("yalm.definitions.Item")
 
 local database = require("yalm.lib.database")
 local utils = require("yalm.lib.utils")
-
-local inspect = require("yalm.lib.inspect")
-
-database.database = assert(database.OpenDatabase())
 
 local evaluate = {}
 
@@ -114,7 +108,7 @@ evaluate.check_loot_rules = function(item, loot_conditions, loot_rules, char_rul
 end
 
 evaluate.parse_preference_string = function(preference)
-	local parts = utils.Split(preference, "|")
+	local parts = utils.split(preference, "|")
 
 	local setting = parts[1]
 	local quantity = tonumber(parts[2])
@@ -128,7 +122,7 @@ evaluate.parse_preference_string = function(preference)
 end
 
 evaluate.convert_rule_preference = function(item, preference)
-	local converted = utils.ShallowCopy(preference)
+	local converted = utils.shallow_copy(preference)
 
 	if type(converted) == "string" then
 		return evaluate.parse_preference_string(preference)
@@ -154,7 +148,7 @@ evaluate.get_loot_preference_for_member = function(member, item, loot, unmatched
 
 	local char_name = member.CleanName():lower()
 
-	local char_settings = settings.init_character_settings(char_name)
+	local char_settings = settings.init_char_settings(char_name)
 
 	if unmatched_item_rule then
 		merged_unmatched_item_rule = char_settings.unmatched_item_rule or unmatched_item_rule

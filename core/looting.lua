@@ -5,7 +5,6 @@ local inventory = require("yalm.classes.inventory")
 local evaluate = require("yalm.classes.evaluate")
 
 local utils = require("yalm.lib.utils")
-local inspect = require("yalm.lib.inspect")
 
 local looting = {}
 
@@ -172,7 +171,7 @@ looting.handle_master_looting = function(global_settings)
 		return
 	end
 
-	Write.Info("\a-t%s\ax passes with %s", item_name, utils.GetItemPreferenceString(preference))
+	Write.Info("\a-t%s\ax passes with %s", item_name, utils.get_item_preference_string(preference))
 
 	if not can_loot then
 		Write.Warn("No one is able to loot \a-t%s\ax", item_name)

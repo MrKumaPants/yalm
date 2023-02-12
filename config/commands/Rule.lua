@@ -2,7 +2,7 @@ local configuration = require("yalm.config.configuration")
 
 local command = {}
 
-command.Help = function(loot, char_settings, global_settings, args)
+command.help = function(global_settings, char_settings, args)
 	Write.Help("\at[\ax\ay/yalm rule help\ax\at]\ax")
 	Write.Help("\axSubcommands Available:")
 	Write.Help("\t  \ayhelp\ax -- Display this help output")
@@ -12,35 +12,35 @@ command.Help = function(loot, char_settings, global_settings, args)
 	Write.Help("\axSettings Available:")
 end
 
-command.Create = function(loot, char_settings, global_settings, args)
-	configuration.create(loot, configuration.types.rule.name, args)
+command.create = function(global_settings, char_settings, args)
+	configuration.create(global_settings, configuration.types.rule.name, args)
 end
 
-command.Delete = function(loot, char_settings, global_settings, args)
-	configuration.delete(loot, configuration.types.rule.name, args)
+command.delete = function(global_settings, char_settings, args)
+	configuration.delete(global_settings, configuration.types.rule.name, args)
 end
 
-command.Set = function(loot, char_settings, global_settings, args)
+command.set = function(global_settings, char_settings, args)
 	return
 end
 
 command.valid_subcommands = {
 	["help"] = {
-		func = command.Help,
+		func = command.help,
 	},
 	["create"] = {
-		func = command.Create,
+		func = command.create,
 	},
 	["delete"] = {
-		func = command.Delete,
+		func = command.delete,
 	},
 	["set"] = {
-		func = command.Set,
+		func = command.set,
 	},
 }
 
-local function action(loot, char_settings, global_settings, args)
-	configuration.action(loot, char_settings, global_settings, args, command)
+local function action(global_settings, char_settings, args)
+	configuration.action(global_settings, char_settings, args, command)
 end
 
 return { action_func = action }

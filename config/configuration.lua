@@ -1,9 +1,9 @@
 ---@type Mq
 local mq = require("mq")
 
-local loader = require("yalm.classes.loader")
-
 local settings = require("yalm.config.settings")
+
+local loader = require("yalm.core.loader")
 
 local utils = require("yalm.lib.utils")
 
@@ -36,11 +36,11 @@ local configuration = {
 	},
 }
 
-configuration.set = function(loot, type, args)
+configuration.set = function(global_settings, type, args)
 	return
 end
 
-configuration.create = function(loot, type, args)
+configuration.create = function(global_settings, type, args)
 	if not args[3] then
 		Write.Error("No name specified")
 		return
@@ -51,20 +51,20 @@ configuration.create = function(loot, type, args)
 	local template_name = "Condition.lua"
 	local template_path = ("%s/yalm/templates/%s"):format(mq.luaDir, template_name)
 
-	if not utils.FileExists(template_path) then
+	if not utils.file_exists(template_path) then
 		Write.Error("No template file exists for \at%s\ax", template_path)
 	end
 
 	local loader_type = configuration.types[type].loader_type
 	local destination_path = ("%s/yalm/config/%s/%s.lua"):format(mq.luaDir, loader_type, name)
 
-	if utils.FileExists(destination_path) then
+	if utils.file_exists(destination_path) then
 		Write.Warn("\ao%s\ax already exists", name)
 		return
 	end
 
 	Write.Info("Creating \ao%s.lua\ax based off \ao%s\ax", name, template_name)
-	utils.CopyFile(template_path, destination_path)
+	utils.copy_file(template_path, destination_path)
 
 	local config = {
 		[name] = {
@@ -80,7 +80,7 @@ configuration.create = function(loot, type, args)
 	settings.update_and_save_global_settings(loot, loader_type, config)
 end
 
-configuration.delete = function(loot, type, args)
+configuration.delete = function(global_settings, type, args)
 	if not args[3] then
 		Write.Error("No name specified")
 		return
@@ -90,21 +90,21 @@ configuration.delete = function(loot, type, args)
 	local loader_type = configuration.types[type].loader_type
 	local destination_path = ("%s/yalm/config/%s/%s.lua"):format(mq.luaDir, loader_type, name)
 
-	if not loot[loader_type][name] then
+	if not global_settings[loader_type][name] then
 		Write.Error("\at%s\ax is not a valid %s name", name, type)
 		return
 	end
 
 	Write.Info("Deleting \ao%s.lua\ax from \ao%s\ax", name, loader_type)
-	utils.DeleteFile(destination_path)
+	utils.delete_file(destination_path)
 
 	Write.Info("Deleting \ao%s\ax from \ao%s\ax in settings", name, loader_type)
-	settings.remove_and_save_global_settings(loot, loader_type, name)
+	settings.remove_and_save_global_settings(global_settings, loader_type, name)
 end
 
-configuration.action = function(loot, char_settings, global_settings, args, command)
+configuration.action = function(global_settings, char_settings, args, command)
 	if not args[2] then
-		command.help.func(loot, char_settings, global_settings, args)
+		command.help.func(global_settings, char_settings, args)
 		return
 	end
 
@@ -115,7 +115,7 @@ configuration.action = function(loot, char_settings, global_settings, args, comm
 		return
 	end
 
-	command.valid_subcommands[subcommand].func(loot, char_settings, global_settings, args)
+	command.valid_subcommands[subcommand].func(global_settings, char_settings, args)
 end
 
 return configuration

@@ -1,15 +1,20 @@
 ---@type Mq
 local mq = require("mq")
 
-local evaluate = require("yalm.classes.evaluate")
-local helpers = require("yalm.classes.helpers")
+local evaluate = require("yalm.core.evaluate")
+local helpers = require("yalm.core.helpers")
 
-local function get_buy_preference(item, loot, char_settings, global_settings)
+local function get_buy_preference(item, global_settings, char_settings)
 	if item.Name() then
-		local preference = evaluate.get_loot_preference(item, loot, char_settings, global_settings.unmatched_item_rule)
+		local preference = evaluate.get_loot_preference(
+			item,
+			global_settings,
+			char_settings,
+			global_settings.settings.unmatched_item_rule
+		)
 
 		if preference then
-			local loot_preference = loot.preferences[preference.setting]
+			local loot_preference = global_settings.preferences[preference.setting]
 
 			if loot_preference and loot_preference.name == "Buy" then
 				local member = mq.TLO.Me
@@ -23,8 +28,8 @@ local function get_buy_preference(item, loot, char_settings, global_settings)
 	return nil
 end
 
-local function buy_item(item, loot, char_settings, global_settings)
-	local preference = get_buy_preference(item, loot, char_settings, global_settings)
+local function buy_item(item, global_settings, char_settings)
+	local preference = get_buy_preference(item, global_settings, char_settings)
 
 	if preference then
 		local item_count = mq.TLO.FindItemCount(item.ID())() or 0
@@ -46,7 +51,7 @@ local function buy_item(item, loot, char_settings, global_settings)
 	end
 end
 
-local function action(loot, char_settings, global_settings, args)
+local function action(global_settings, char_settings, args)
 	Write.Info("Buying items...")
 
 	if helpers.ready_merchant_window(true) then
@@ -60,7 +65,7 @@ local function action(loot, char_settings, global_settings, args)
 
 		for i = 1, item_count do
 			local item = mq.TLO.Merchant.Item(i)
-			buy_item(item, loot, char_settings, global_settings)
+			buy_item(item, global_settings, char_settings)
 		end
 	end
 

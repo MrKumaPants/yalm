@@ -23,7 +23,7 @@ loader.unload_package = function(name, type)
 	package.loaded[loader.packagename(name, type)] = nil
 end
 
-loader.should_load = function(rule, loot_type, char_settings)
+loader.should_load = function(loot_type, char_settings)
 	if loot_type == loader.types.commands or loot_type == loader.types.conditions then
 		return true
 	elseif loot_type == loader.types.rules then
@@ -98,7 +98,7 @@ end
 
 loader.manage = function(rule_list, loot_type, char_settings)
 	for _, rule in pairs(rule_list) do
-		local load_event = loader.should_load(rule, loot_type, char_settings)
+		local load_event = loader.should_load(loot_type, char_settings)
 		if not rule.loaded and not rule.failed and load_event then
 			loader.load(rule, loot_type)
 		elseif rule.loaded and not load_event then

@@ -3,11 +3,33 @@ yalm -- fuddles
 ]]
 ---@type Mq
 local mq = require("mq")
+local PackageMan = require("mq/PackageMan")
+local Utils = require("mq/Utils")
 
-local Write = require("yalm.Write")
+require("yalm.lib.Write")
 
-local looting = require("yalm.classes.looting")
-local loader = require("yalm.classes.loader")
+local sql = Utils.Library.Include("lsqlite3")
+if not sql then
+	if PackageMan.Install("lsqlite3") == 2 then
+		print("User canceled the install, cannot proceed")
+		mq.exit()
+	end
+end
+
+local lfs = Utils.Library.Include("lfs")
+if not lfs then
+	if PackageMan.Install("lfs") == 2 then
+		print("User canceled the install, cannot proceed")
+		mq.exit()
+	end
+end
+
+require("yalm.lib.database")
+
+Database.database = assert(Database.OpenDatabase())
+
+local looting = require("yalm.core.looting")
+local loader = require("yalm.core.loader")
 local settings = require("yalm.config.settings")
 
 local utils = require("yalm.lib.utils")
@@ -27,11 +49,6 @@ local state = {
 }
 
 local global_settings, char_settings
-
-local function toggle_set(set, loot_type)
-	char_settings[loot_type][set.name] = not char_settings[set][set.name]
-	settings.save_character_settings(char_settings)
-end
 
 local function find_loot_command(command)
 	for _, loot_command in pairs(global_settings.commands) do
@@ -66,9 +83,6 @@ local function print_help()
 	end
 end
 
-local ON_VALUES = { ["on"] = 1, ["1"] = 1, ["true"] = 1 }
-local OFF_VALUES = { ["off"] = 1, ["0"] = 1, ["false"] = 1 }
-
 local function cmd_handler(...)
 	local args = { ... }
 
@@ -86,8 +100,7 @@ local function cmd_handler(...)
 		mq.cmd("/timed 10 /lua run yalm")
 		state.terminate = true
 	elseif loot_command and loot_command.loaded then
-		local success, result =
-			pcall(loot_command.func.action_func, global_settings, char_settings, global_settings.settings, args)
+		local success, result = pcall(loot_command.func.action_func, global_settings, char_settings, args)
 		if not success then
 			Write.Warn("Running command failed: %s - %s", loot_command.name, result)
 		end
@@ -95,7 +108,7 @@ local function cmd_handler(...)
 end
 
 local function initialize()
-	utils.PluginCheck()
+	utils.plugin_check()
 
 	mq.bind("/yalm", cmd_handler)
 

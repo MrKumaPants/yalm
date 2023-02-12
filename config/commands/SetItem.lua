@@ -1,13 +1,13 @@
 local mq = require("mq")
 
-local evaluate = require("yalm.classes.evaluate")
-local loader = require("yalm.classes.loader")
+local evaluate = require("yalm.core.evaluate")
+local loader = require("yalm.core.loader")
 
 local settings = require("yalm.config.settings")
 
 local utils = require("yalm.lib.utils")
 
-local function action(loot, char_settings, global_settings, args)
+local function action(global_settings, char_settings, args)
 	local item_name, global_or_character = nil, "character"
 
 	if not args[2] then
@@ -33,7 +33,7 @@ local function action(loot, char_settings, global_settings, args)
 
 	local preference = evaluate.parse_preference_string(args[2])
 
-	if not evaluate.is_valid_preference(loot.preferences, preference) then
+	if not evaluate.is_valid_preference(global_settings.preferences, preference) then
 		Write.Error("Invalid loot preference for \a-t%s\ax", item_name)
 		return
 	end
@@ -46,7 +46,7 @@ local function action(loot, char_settings, global_settings, args)
 		end
 	end
 
-	Write.Info("Setting \a-t%s\ax preference to %s", item_name, utils.GetItemPreferenceString(preference))
+	Write.Info("Setting \a-t%s\ax preference to %s", item_name, utils.get_item_preference_string(preference))
 
 	if mq.TLO.Cursor.ID() then
 		Write.Info("Putting \a-t%s\ax into inventory", item_name)
@@ -56,10 +56,10 @@ local function action(loot, char_settings, global_settings, args)
 	if global_or_character == "me" then
 		Write.Info("Saving character settings")
 		char_settings[loader.types.items][item_name] = preference
-		settings.save_character_settings(char_settings)
+		settings.save_char_settings(char_settings)
 	elseif global_or_character == "all" then
 		Write.Info("Saving global settings")
-		settings.update_and_save_global_settings(loot, loader.types.items, {
+		settings.update_and_save_global_settings(global_settings, loader.types.items, {
 			[item_name] = preference,
 		})
 	end

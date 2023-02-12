@@ -1,13 +1,13 @@
 ---@type Mq
 local mq = require("mq")
 
-local loader = require("yalm.classes.loader")
+local loader = require("yalm.core.loader")
 
 local persistence = require("yalm.lib.persistence")
 local utils = require("yalm.lib.utils")
 
 -- default application settings
-local default_settings = {
+local default_global_settings = {
 	["categories"] = {
 		[1] = "Configuration",
 		[2] = "Item",
@@ -115,7 +115,7 @@ local default_settings = {
 
 local settings = {}
 
-settings.init_character_settings = function(character)
+settings.init_char_settings = function(character)
 	local char_settings
 
 	local filename = ("%s/YALM/yalm-%s-%s.lua"):format(
@@ -123,13 +123,13 @@ settings.init_character_settings = function(character)
 		mq.TLO.EverQuest.Server(),
 		character or mq.TLO.Me.CleanName():lower()
 	)
-	if not utils.FileExists(filename) then
+	if not utils.file_exists(filename) then
 		char_settings = {
 			items = {},
 			settings = {},
 			rules = {},
 		}
-		settings.save_character_settings(char_settings)
+		settings.save_char_settings(char_settings)
 	else
 		local module, error = loadfile(filename)()
 		char_settings = module
@@ -155,28 +155,28 @@ settings.init_global_settings = function()
 
 	local filename = ("%s/YALM.lua"):format(mq.configDir)
 
-	if not utils.FileExists(filename) then
-		global_settings = default_settings
-		settings.save_global_settings(default_settings)
+	if not utils.file_exists(filename) then
+		global_settings = default_global_settings
+		settings.save_global_settings(default_global_settings)
 	else
 		local module, error = loadfile(filename)()
 		global_settings = module
 	end
 
-	local default_copy = utils.TableClone(default_settings)
-	global_settings = utils.Merge(default_copy, global_settings)
+	local default_copy = utils.table_clone(default_global_settings)
+	global_settings = utils.merge(default_copy, global_settings)
 
 	return global_settings
 end
 
 settings.init_settings = function(character)
-	assert(utils.MakeDir(mq.configDir, "YALM"))
+	assert(utils.make_dir(mq.configDir, "YALM"))
 
 	local global_settings = settings.init_global_settings()
-	local char_settings = settings.init_character_settings(character)
+	local char_settings = settings.init_char_settings(character)
 
 	if char_settings.settings then
-		utils.Merge(global_settings.settings, char_settings.settings)
+		utils.merge(global_settings.settings, char_settings.settings)
 	end
 
 	return global_settings, char_settings
@@ -186,7 +186,7 @@ settings.save_global_settings = function(global_settings)
 	persistence.store(("%s/YALM.lua"):format(mq.configDir), global_settings)
 end
 
-settings.save_character_settings = function(char_settings)
+settings.save_char_settings = function(char_settings)
 	persistence.store(
 		("%s/YALM/yalm-%s-%s.lua"):format(mq.configDir, mq.TLO.EverQuest.Server(), mq.TLO.Me.CleanName():lower()),
 		char_settings
@@ -212,7 +212,7 @@ settings.set_global_settings = function(type, tables)
 	end
 
 	local global_settings = settings.init_global_settings()
-	utils.Merge(global_settings[type], tables)
+	utils.merge(global_settings[type], tables)
 
 	settings.save_global_settings(global_settings)
 end
@@ -233,7 +233,7 @@ settings.update_and_save_global_settings = function(global_settings, type, table
 		return
 	end
 
-	utils.Merge(global_settings[type], tables)
+	utils.merge(global_settings[type], tables)
 	settings.set_global_settings(type, tables)
 end
 

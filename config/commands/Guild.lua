@@ -1,7 +1,7 @@
 local mq = require("mq")
 
-local evaluate = require("yalm.classes.evaluate")
-local helpers = require("yalm.classes.helpers")
+local evaluate = require("yalm.core.evaluate")
+local helpers = require("yalm.core.helpers")
 
 local function get_free_bank_count()
 	local handle = "GuildBankWnd/GBANK_BankCountLabel"
@@ -66,12 +66,13 @@ local function is_valid_deposit(item)
 	return true
 end
 
-local function can_deposit_item(item, loot, char_settings, global_settings)
+local function can_deposit_item(item, global_settings, char_settings)
 	if item.Name() then
-		local preference = evaluate.get_loot_preference(item, loot, char_settings, global_settings.unmatched_item_rule)
+		local preference =
+			evaluate.get_loot_preference(item, global_settings, char_settings, global_settings.unmatched_item_rule)
 
 		if preference then
-			local loot_preference = loot.preferences[preference.setting]
+			local loot_preference = global_settings.preferences[preference.setting]
 			if loot_preference and loot_preference.name == "Guild" and is_valid_deposit(item) then
 				if not evaluate.is_item_in_saved_slot(item, char_settings) then
 					return true
@@ -144,8 +145,8 @@ local function change_permissions()
 	end
 end
 
-local function deposit_item(item, loot, char_settings, global_settings)
-	local can_deposit = can_deposit_item(item, loot, char_settings, global_settings)
+local function deposit_item(item, global_settings, char_settings)
+	local can_deposit = can_deposit_item(item, global_settings, char_settings)
 	if can_deposit then
 		-- pick up the item
 		if item.ItemSlot2() ~= nil then
@@ -183,7 +184,7 @@ local function deposit_item(item, loot, char_settings, global_settings)
 	end
 end
 
-local function action(loot, char_settings, global_settings, args)
+local function action(global_settings, char_settings, args)
 	Write.Info("Depositing items...")
 
 	if helpers.ready_guild_bank_window(true) then
@@ -197,11 +198,11 @@ local function action(loot, char_settings, global_settings, args)
 					if inventory_item.Items() > 0 then
 						for j = 1, inventory_item.Container() do
 							local item = mq.TLO.Me.Inventory(i).Item(j)
-							deposit_item(item, loot, char_settings, global_settings)
+							deposit_item(item, global_settings, char_settings)
 						end
 					end
 				else
-					deposit_item(inventory_item, loot, char_settings, global_settings)
+					deposit_item(inventory_item, global_settings, char_settings)
 				end
 			end
 		end
