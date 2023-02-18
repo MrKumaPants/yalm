@@ -24,9 +24,18 @@ Database.OpenDatabase = function(path)
 	return db
 end
 
-Database.QueryDatabaseForItem = function(item_id)
+Database.QueryDatabaseForItemId = function(item_id)
 	local item_db
 	for row in Database.database:nrows(string.format("select * from items where id = %s", item_id)) do
+		item_db = row
+		break
+	end
+	return item_db
+end
+
+Database.QueryDatabaseForItemName = function(item_name)
+	local item_db = nil
+	for row in Database.database:nrows(string.format('select * from items where name = "%s"', item_name)) do
 		item_db = row
 		break
 	end

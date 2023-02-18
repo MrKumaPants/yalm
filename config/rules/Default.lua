@@ -29,6 +29,10 @@ local obj1 = {
 			["name"] = "Tradeskill",
 			["setting"] = "Keep",
 		},
+		[7] = {
+			["name"] = "Ornament",
+			["setting"] = "Guild",
+		},
 	},
 	["items"] = {},
 }

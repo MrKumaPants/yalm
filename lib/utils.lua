@@ -62,16 +62,16 @@ utils.merge = function(t1, t2)
 	return t1
 end
 
-utils.shallow_copy = function(orig)
-	local orig_type = type(orig)
-	local copy
-	if orig_type == "table" then
-		copy = {}
-		for orig_key, orig_value in pairs(orig) do
-			copy[orig_key] = orig_value
+utils.deep_copy = function(original)
+	local copy = {}
+	if type(original) ~= table then
+		return original
+	end
+	for k, v in pairs(original) do
+		if type(v) == "table" then
+			v = utils.deep_copy(v)
 		end
-	else -- number, string, boolean, etc
-		copy = orig
+		copy[k] = v
 	end
 	return copy
 end
@@ -86,6 +86,15 @@ utils.split = function(input, sep)
 		table.insert(t, str)
 	end
 	return t
+end
+
+utils.find = function(list, value)
+	for i in ipairs(list) do
+		if list[i] == value then
+			return i
+		end
+	end
+	return nil
 end
 
 -- Create a table of {key:true, ..} from a list for checking a value is in the list
@@ -113,10 +122,6 @@ utils.table_concat = function(t1, t2)
 		table.insert(t, v)
 	end
 	return t
-end
-
-utils.table_clone = function(org)
-	return { unpack(org) }
 end
 
 utils.do_tables_match = function(a, b)

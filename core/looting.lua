@@ -1,8 +1,8 @@
 ---@type Mq
 local mq = require("mq")
 
-local inventory = require("yalm.classes.inventory")
-local evaluate = require("yalm.classes.evaluate")
+local inventory = require("yalm.core.inventory")
+local evaluate = require("yalm.core.evaluate")
 
 local utils = require("yalm.lib.utils")
 
@@ -17,7 +17,7 @@ looting.can_i_loot = function(loot_count_tlo)
 end
 
 looting.is_solo_looter = function()
-	return mq.TLO.Group.Members() == nil or (mq.TLO.Group.Members() == 1 and mq.TLO.Me.Mercenary.ID())
+	return mq.TLO.Group.Members() == 0 or (mq.TLO.Group.Members() == 1 and mq.TLO.Me.Mercenary.ID())
 end
 
 looting.get_group_or_raid_tlo = function()
@@ -49,6 +49,10 @@ end
 
 looting.give_item = function(member)
 	mq.cmdf("/advloot shared 1 giveto %s 1", member.Name())
+end
+
+looting.loot_item = function()
+	mq.cmd("/advloot personal 1 loot")
 end
 
 looting.get_member_count = function(tlo)
@@ -126,7 +130,7 @@ looting.handle_master_looting = function(global_settings)
 	local item = mq.TLO.AdvLoot[loot_list_tlo](1)
 	local item_name = item.Name()
 
-	if not item then
+	if item == "NULL" or not item_name then
 		return
 	end
 
@@ -139,8 +143,8 @@ looting.handle_master_looting = function(global_settings)
 		global_settings.settings.unmatched_item_rule
 	)
 
-	if not can_loot and global_settings.always_loot and not preference then
-		Write.Warn("No one matched \a-t%s\ax loot preference", item.Name())
+	if not can_loot and global_settings.settings.always_loot then
+		Write.Warn("No one matched \a-t%s\ax loot preference", item_name)
 		Write.Warn("Trying again ignoring quantity and list")
 
 		can_loot, member, preference = looting.get_member_can_loot(
@@ -155,7 +159,7 @@ looting.handle_master_looting = function(global_settings)
 
 	if not preference then
 		Write.Warn("No loot preference found for \a-t%s\ax", item_name)
-		-- looting.leave_item()
+		looting.leave_item()
 		return
 	end
 
@@ -181,26 +185,88 @@ looting.handle_master_looting = function(global_settings)
 
 	if item_name == mq.TLO.AdvLoot[loot_list_tlo](1).Name() then
 		Write.Info("Giving \a-t%s\ax to \ao%s\ax", item_name, member)
-		looting.give_item(member)
-		mq.doevents()
 		mq.delay(global_settings.distribute_delay)
+		looting.give_item(member)
 	end
 end
 
 looting.handle_personal_loot = function()
-	local solo_looter = looting.is_solo_looter()
-
-	if solo_looter then
+	if looting.is_solo_looter() then
 		return
 	end
 
-	while mq.TLO.AdvLoot.PCount() > 0 do
-		if not mq.TLO.AdvLoot.LootInProgress() and mq.TLO.AdvLoot.PList(1).Name() then
-			Write.Info("Looting \a-t%s\ax", tostring(mq.TLO.AdvLoot.PList(1).Name()))
-			inventory.check_lore_equip_prompt()
-			mq.cmd("/advloot personal 1 loot")
-			mq.delay(250)
-		end
+	if mq.TLO.AdvLoot.LootInProgress() then
+		return
+	end
+
+	local item = mq.TLO.AdvLoot.PList(1)
+	local item_name = item.Name()
+
+	if item == "NULL" or not item_name then
+		return
+	end
+
+	Write.Info("Looting \a-t%s\ax", item_name)
+	looting.loot_item()
+end
+
+looting.handle_solo_looting = function(global_settings)
+	if not looting.is_solo_looter() then
+		return
+	end
+
+	if mq.TLO.AdvLoot.LootInProgress() then
+		return
+	end
+
+	local item = mq.TLO.AdvLoot.PList(1)
+	local item_name = item.Name()
+
+	if item == "NULL" or not item_name then
+		return
+	end
+
+	local member = mq.TLO.Me
+	local can_loot, preference = evaluate.check_can_loot(
+		member,
+		item,
+		global_settings,
+		global_settings.settings.save_slots,
+		global_settings.settings.dannet_delay,
+		global_settings.settings.always_loot,
+		false
+	)
+
+	if not preference then
+		Write.Warn("No loot preference found for \a-t%s\ax", item_name)
+		looting.leave_item()
+		return
+	end
+
+	if not evaluate.is_valid_preference(global_settings.preferences, preference) then
+		Write.Warn("Invalid loot preference for \a-t%s\ax", item_name)
+		looting.leave_item()
+		return
+	end
+
+	if global_settings.preferences[preference.setting].leave then
+		Write.Info("Loot preference set to \aoleave\ax for \a-t%s\ax", item_name)
+		looting.leave_item()
+		return
+	end
+
+	Write.Info("\a-t%s\ax passes with %s", item_name, utils.get_item_preference_string(preference))
+
+	if not can_loot then
+		Write.Warn("You are unable to loot \a-t%s\ax", item_name)
+		looting.leave_item()
+		return
+	end
+
+	if item_name == mq.TLO.AdvLoot.PList(1).Name() then
+		Write.Info("Looting \a-t%s\ax", item_name)
+		mq.delay(global_settings.distribute_delay)
+		looting.loot_item()
 	end
 end
 

@@ -6,21 +6,22 @@ local helpers = require("yalm.core.helpers")
 
 local function get_buy_preference(item, global_settings, char_settings)
 	if item.Name() then
-		local preference = evaluate.get_loot_preference(
+		local member = mq.TLO.Me
+		local can_loot, preference = evaluate.check_can_loot(
+			member,
 			item,
 			global_settings,
-			char_settings,
-			global_settings.settings.unmatched_item_rule
+			global_settings.settings.save_slots,
+			global_settings.settings.dannet_delay,
+			global_settings.settings.always_loot,
+			false
 		)
 
-		if preference then
+		if can_loot and preference then
 			local loot_preference = global_settings.preferences[preference.setting]
 
 			if loot_preference and loot_preference.name == "Buy" then
-				local member = mq.TLO.Me
-				if evaluate.check_can_loot(member, item, preference, global_settings) then
-					return preference
-				end
+				return preference
 			end
 		end
 	end
@@ -32,22 +33,26 @@ local function buy_item(item, global_settings, char_settings)
 	local preference = get_buy_preference(item, global_settings, char_settings)
 
 	if preference then
-		local item_count = mq.TLO.FindItemCount(item.ID())() or 0
-		local bank_count = mq.TLO.FindItemCount(item.ID())() or 0
-		local count = item_count + bank_count
+		local count, buy_count = 0, 0
 
-		local buy_count = 1
+		repeat
+			local item_count = mq.TLO.FindItemCount(item.ID())() or 0
+			local bank_count = mq.TLO.FindItemBankCount(item.ID())() or 0
+			count = item_count + bank_count
 
-		if preference.quantity and count < preference.quantity then
-			buy_count = preference.quantity - count
-		end
+			if preference.quantity and count < preference.quantity then
+				buy_count = preference.quantity - count
+			end
 
-		mq.TLO.Merchant.SelectItem(item.Name())
-		mq.delay(250)
+			if buy_count > 0 then
+				mq.TLO.Merchant.SelectItem(item.Name())
+				mq.delay(250)
 
-		Write.Info("Buying \ao%s\ax of \a-t%s\a-x", buy_count, item.Name())
-		mq.TLO.Merchant.Buy(buy_count)
-		mq.delay(250)
+				Write.Info("Buying \ao%s\ax of \a-t%s\a-x", buy_count, item.Name())
+				mq.TLO.Merchant.Buy(buy_count)
+				mq.delay(250)
+			end
+		until buy_count == 0
 	end
 end
 

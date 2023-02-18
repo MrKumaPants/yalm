@@ -55,7 +55,7 @@ local function is_valid_deposit(item)
 		return false
 	end
 
-	if item.NoTrade() and item.NoRent() then
+	if item.NoTrade() or item.NoRent() then
 		return false
 	end
 
@@ -100,6 +100,10 @@ local function promote_item()
 	-- promote item
 	mq.cmdf("/nomodkey /notify GuildBankWnd GBANK_PromoteButton leftmouseup")
 	mq.delay(1000)
+
+	while is_promote_button_enabled() do
+		mq.delay(250)
+	end
 end
 
 local function promote_items()
@@ -171,7 +175,9 @@ local function deposit_item(item, global_settings, char_settings)
 				mq.delay(250)
 			end
 
-			promote_item()
+			if get_free_bank_count() > 0 then
+				promote_item()
+			end
 		else
 			Write.Warn("Cursor doesn't match. Expected: \a-t%s\ax; Actual: \ar%s\ax", item.Name(), mq.TLO.Cursor.Name())
 			-- if cursor doesn't match what we expect, put it back
@@ -185,32 +191,18 @@ local function deposit_item(item, global_settings, char_settings)
 end
 
 local function action(global_settings, char_settings, args)
-	Write.Info("Depositing items...")
-
 	if helpers.ready_guild_bank_window(true) then
+		Write.Info("Depositing items...")
+
 		promote_items()
 
-		for i = 23, 32 do
-			local inventory_item = mq.TLO.Me.Inventory(i)
-
-			if inventory_item.Name() then
-				if inventory_item.Container() > 0 then
-					if inventory_item.Items() > 0 then
-						for j = 1, inventory_item.Container() do
-							local item = mq.TLO.Me.Inventory(i).Item(j)
-							deposit_item(item, global_settings, char_settings)
-						end
-					end
-				else
-					deposit_item(inventory_item, global_settings, char_settings)
-				end
-			end
-		end
+		helpers.call_func_on_inventory(deposit_item, global_settings, char_settings)
 
 		change_permissions()
+
+		Write.Info("Finished depositing")
 	end
 
-	Write.Info("Finished depositing")
 	mq.cmd("/cleanup")
 end
 

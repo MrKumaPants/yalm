@@ -13,10 +13,7 @@ local obj1 = {
 		["dannet_delay"] = 250,
 		["save_slots"] = 3,
 	},
-	["categories"] = {
-		[1] = "Configuration",
-		[2] = "Item",
-	},
+	["categories"] = {},
 	["conditions"] = {
 		["FoodDrink"] = {
 			["category"] = "",
@@ -59,91 +56,8 @@ local obj1 = {
 			["name"] = "Poisons",
 		},
 	},
-	["preferences"] = {
-		["Keep"] = {
-			["name"] = "Keep",
-		},
-		["Destroy"] = {
-			["name"] = "Destroy",
-			["leave"] = true,
-		},
-		["Sell"] = {
-			["name"] = "Sell",
-		},
-		["Buy"] = {
-			["name"] = "Buy",
-		},
-		["Guild"] = {
-			["name"] = "Guild",
-		},
-		["Ignore"] = {
-			["name"] = "Ignore",
-			["leave"] = true,
-		},
-	},
-	["commands"] = {
-		["Buy"] = {
-			["name"] = "Buy",
-			["trigger"] = "buy",
-			["help"] = "Buys designated items from the targeted merchant",
-			["category"] = "Item",
-		},
-		["Check"] = {
-			["name"] = "Check",
-			["trigger"] = "check",
-			["help"] = "Print loot preference for all items in inventory or item on cursor",
-			["category"] = "Item",
-		},
-		["Command"] = {
-			["name"] = "Command",
-			["trigger"] = "command",
-			["help"] = "Manage commands. Type \ay/yalm command help\ax for more information.",
-			["category"] = "Configuration",
-		},
-		["Condition"] = {
-			["name"] = "Condition",
-			["trigger"] = "condition",
-			["help"] = "Manage conditions. Type \ay/yalm condition help\ax for more information.",
-			["category"] = "Configuration",
-		},
-		["Convert"] = {
-			["name"] = "Convert",
-			["trigger"] = "convert",
-			["help"] = "Convert Lootly loot file to YALM",
-			["category"] = "Item",
-		},
-		["Destroy"] = {
-			["name"] = "Destroy",
-			["trigger"] = "destroy",
-			["help"] = "Destroy any designated items in your bags",
-			["category"] = "Item",
-		},
-		["Guild"] = {
-			["name"] = "Guild",
-			["trigger"] = "guild",
-			["help"] = "Deposits designated items into the guild bank",
-			["category"] = "Item",
-		},
-		["Rule"] = {
-			["name"] = "Rule",
-			["trigger"] = "rule",
-			["help"] = "Manage rules. Type \ay/yalm rule help\ax for more information.",
-			["category"] = "Configuration",
-		},
-		["Sell"] = {
-			["name"] = "Sell",
-			["trigger"] = "sell",
-			["help"] = "Sells designated items to the targeted merchant",
-			["category"] = "Item",
-		},
-		["SetItem"] = {
-			["args"] = "<item> <preference> [global|character]",
-			["name"] = "SetItem",
-			["trigger"] = "setitem",
-			["help"] = "Set loot preference for item on cursor or by name",
-			["category"] = "Item",
-		},
-	},
+	["preferences"] = {},
+	["commands"] = {},
 	["rules"] = {
 		["Rank 2 Spells"] = {
 			["category"] = "",

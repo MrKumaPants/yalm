@@ -2,6 +2,7 @@
 local mq = require("mq")
 
 local evaluate = require("yalm.core.evaluate")
+local helpers = require("yalm.core.helpers")
 
 local function can_destroy_item(item, global_settings, char_settings)
 	if item.Name() then
@@ -56,22 +57,7 @@ end
 local function action(global_settings, char_settings, args)
 	Write.Info("Destroying items...")
 
-	for i = 23, 32 do
-		local inventory_item = mq.TLO.Me.Inventory(i)
-
-		if inventory_item.Name() then
-			if inventory_item.Container() > 0 then
-				if inventory_item.Items() > 0 then
-					for j = 1, inventory_item.Container() do
-						local item = mq.TLO.Me.Inventory(i).Item(j)
-						destroy_item(item, global_settings, char_settings)
-					end
-				end
-			else
-				destroy_item(inventory_item, global_settings, char_settings)
-			end
-		end
-	end
+	helpers.call_func_on_inventory(destroy_item, global_settings, char_settings)
 
 	Write.Info("Finished cleanup")
 	mq.cmd("/cleanup")

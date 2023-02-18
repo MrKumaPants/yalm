@@ -2,7 +2,7 @@ local configuration = require("yalm.config.configuration")
 
 local command = {}
 
-command.help = function(global_settings, char_settings, args)
+command.help = function(global_settings, char_settings, type, args)
 	Write.Help("\at[\ax\ay/yalm command help\ax\at]\ax")
 	Write.Help("\axSubcommands Available:")
 	Write.Help("\t  \ayhelp\ax -- Display this help output")
@@ -12,35 +12,19 @@ command.help = function(global_settings, char_settings, args)
 	Write.Help("\axSettings Available:")
 end
 
-command.create = function(global_settings, char_settings, args)
-	configuration.create(global_settings, configuration.types.command.name, args)
-end
-
-command.delete = function(global_settings, char_settings, args)
-	configuration.delete(global_settings, configuration.types.command.name, args)
-end
-
-command.set = function(global_settings, char_settings, args)
-	return
-end
-
 command.valid_subcommands = {
 	["help"] = {
 		func = command.help,
 	},
-	["create"] = {
-		func = command.create,
-	},
-	["delete"] = {
-		func = command.delete,
-	},
-	["set"] = {
-		func = command.set,
-	},
+	["create"] = {},
+	["delete"] = {},
+	["edit"] = {},
+	["list"] = {},
+	["set"] = {},
 }
 
 local function action(global_settings, char_settings, args)
-	configuration.action(global_settings, char_settings, args, command)
+	configuration.action(command, global_settings, char_settings, configuration.types.command.name, args)
 end
 
 return { action_func = action }

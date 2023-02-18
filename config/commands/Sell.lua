@@ -15,8 +15,9 @@ local function can_sell_item(item, global_settings, char_settings)
 
 		if preference then
 			local loot_preference = global_settings.preferences[preference.setting]
-			if loot_preference and loot_preference.name == "Sell" and item.Value() > 0 then
-				if not evaluate.is_item_in_saved_slot(item, char_settings) then
+
+			if loot_preference and loot_preference.name == "Sell" then
+				if not evaluate.is_item_in_saved_slot(item, char_settings) and item.Value() > 0 then
 					return true
 				end
 			end
@@ -42,45 +43,34 @@ local function sell_item(item, global_settings, char_settings)
 
 		-- sell item if the selected item in the merchant window matches
 		if mq.TLO.Merchant.SelectedItem.ID() == item.ID() then
-			if mq.TLO.Merchant.SelectedItem.Value() * (1 / mq.TLO.Merchant.Markup()) > 0 then
+			if not mq.TLO.Window("MerchantWnd/MW_SelectedPriceLabel").Text():find("^0c") then
 				Write.Info("Selling \a-t%s\ax", item.Name())
 				mq.TLO.Merchant.Sell(stack)
 				mq.delay(1000)
+
+				while mq.TLO.Merchant.SelectedItem.ID() do
+					mq.delay(150)
+				end
 			end
 		else
 			Write.Warn(
 				"Selected item doesn't match. Expected: \a-t%s\ax; Actual: \ar%s\ax",
 				item.Name(),
-				mq.TLO.Merchant.SelectedItem.ID()
+				mq.TLO.Merchant.SelectedItem.Name()
 			)
-			mq.delay(1000)
 		end
 	end
 end
 
 local function action(global_settings, char_settings, args)
-	Write.Info("Selling items...")
-
 	if helpers.ready_merchant_window(true) then
-		for i = 23, 32 do
-			local inventory_item = mq.TLO.Me.Inventory(i)
+		Write.Info("Selling items...")
 
-			if inventory_item.Name() then
-				if inventory_item.Container() > 0 then
-					if inventory_item.Items() > 0 then
-						for j = 1, inventory_item.Container() do
-							local item = mq.TLO.Me.Inventory(i).Item(j)
-							sell_item(item, global_settings, char_settings)
-						end
-					end
-				else
-					sell_item(inventory_item, global_settings, char_settings)
-				end
-			end
-		end
+		helpers.call_func_on_inventory(sell_item, global_settings, char_settings)
+
+		Write.Info("Finished selling")
 	end
 
-	Write.Info("Finished selling")
 	mq.cmd("/cleanup")
 end
 

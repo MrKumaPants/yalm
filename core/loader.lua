@@ -3,6 +3,7 @@ local mq = require("mq")
 
 local loader = {
 	types = {
+		categories = "categories",
 		commands = "commands",
 		conditions = "conditions",
 		items = "items",
@@ -12,7 +13,7 @@ local loader = {
 }
 
 loader.filename = function(name, type)
-	return ("%s/yalm/%s/%s.lua"):format(mq.luaDir, type, name)
+	return ("%s/yalm/config/%s/%s.lua"):format(mq.luaDir, type, name)
 end
 
 loader.packagename = function(name, type)

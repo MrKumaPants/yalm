@@ -19,6 +19,12 @@ local default_global_settings = {
 			["help"] = "Buys designated items from the targeted merchant",
 			["category"] = "Item",
 		},
+		["Character"] = {
+			["name"] = "Character",
+			["trigger"] = "char",
+			["help"] = "Manage character. Type \ay/yalm char help\ax for more information.",
+			["category"] = "Configuration",
+		},
 		["Check"] = {
 			["name"] = "Check",
 			["trigger"] = "check",
@@ -40,13 +46,20 @@ local default_global_settings = {
 		["Convert"] = {
 			["name"] = "Convert",
 			["trigger"] = "convert",
-			["help"] = "Convert Lootly loot file to YALM",
+			["help"] = "Converts other loot systems to YALM. Type \ay/yalm convert help\ax for more information",
 			["category"] = "Item",
 		},
 		["Destroy"] = {
 			["name"] = "Destroy",
 			["trigger"] = "destroy",
 			["help"] = "Destroy any designated items in your bags",
+			["category"] = "Item",
+		},
+		["Donate"] = {
+			["args"] = "[guild|me]",
+			["name"] = "Donate",
+			["trigger"] = "donate",
+			["help"] = "Donates designated items",
 			["category"] = "Item",
 		},
 		["Guild"] = {
@@ -72,6 +85,12 @@ local default_global_settings = {
 			["name"] = "SetItem",
 			["trigger"] = "setitem",
 			["help"] = "Set loot preference for item on cursor or by name",
+			["category"] = "Item",
+		},
+		["Simulate"] = {
+			["name"] = "Simulate",
+			["trigger"] = "simulate",
+			["help"] = "Simulate looting item on cursor or by name",
 			["category"] = "Item",
 		},
 	},
@@ -109,7 +128,34 @@ local default_global_settings = {
 		["Sell"] = {
 			["name"] = "Sell",
 		},
+		["Tribute"] = {
+			["name"] = "Tribute",
+		},
 	},
+	["rules"] = {},
+}
+
+-- default yalm configuration settings
+local default_yalm_settings = {
+	["categories"] = {},
+	["commands"] = {},
+	["conditions"] = {},
+	["items"] = {},
+	["settings"] = {
+		["always_loot"] = true,
+		["save_slots"] = 3,
+		["unmatched_item_rule"] = {
+			["setting"] = "Keep",
+		},
+	},
+	["preferences"] = {},
+	["rules"] = {},
+}
+
+-- default char settings
+local default_char_settings = {
+	["items"] = {},
+	["settings"] = {},
 	["rules"] = {},
 }
 
@@ -124,28 +170,15 @@ settings.init_char_settings = function(character)
 		character or mq.TLO.Me.CleanName():lower()
 	)
 	if not utils.file_exists(filename) then
-		char_settings = {
-			items = {},
-			settings = {},
-			rules = {},
-		}
+		char_settings = default_char_settings
 		settings.save_char_settings(char_settings)
 	else
 		local module, error = loadfile(filename)()
 		char_settings = module
 	end
 
-	if not char_settings["items"] then
-		char_settings["items"] = {}
-	end
-
-	if not char_settings["settings"] then
-		char_settings["settings"] = {}
-	end
-
-	if not char_settings["rules"] then
-		char_settings["rules"] = {}
-	end
+	local default_copy = utils.deep_copy(default_char_settings)
+	char_settings = utils.merge(default_copy, char_settings)
 
 	return char_settings
 end
@@ -156,15 +189,18 @@ settings.init_global_settings = function()
 	local filename = ("%s/YALM.lua"):format(mq.configDir)
 
 	if not utils.file_exists(filename) then
-		global_settings = default_global_settings
-		settings.save_global_settings(default_global_settings)
+		global_settings = default_yalm_settings
+		settings.save_global_settings(default_yalm_settings)
 	else
 		local module, error = loadfile(filename)()
 		global_settings = module
 	end
 
-	local default_copy = utils.table_clone(default_global_settings)
-	global_settings = utils.merge(default_copy, global_settings)
+	local default_copy = utils.deep_copy(default_global_settings)
+	global_settings["categories"] = utils.table_concat(default_copy["categories"], global_settings["categories"])
+	global_settings["commands"] = utils.merge(global_settings["commands"], default_copy["commands"])
+	global_settings["settings"] = utils.merge(global_settings["settings"], default_copy["settings"])
+	global_settings["preferences"] = utils.merge(global_settings["preferences"], default_copy["preferences"])
 
 	return global_settings
 end
@@ -193,48 +229,58 @@ settings.save_char_settings = function(char_settings)
 	)
 end
 
-settings.remove_global_settings = function(type, key)
-	if not loader.types[type] then
-		Write.Error("%s is not a valid global key", type)
+settings.remove_global_settings = function(loader_type, key)
+	if not loader.types[loader_type] then
+		Write.Error("%s is not a valid global key", loader_type)
 		return
 	end
 
 	local global_settings = settings.init_global_settings()
 
-	global_settings[type][key] = nil
+	if type(key) == "number" then
+		table.remove(global_settings[loader_type], key)
+	else
+		global_settings[loader_type][key] = nil
+	end
+
 	settings.save_global_settings(global_settings)
 end
 
-settings.set_global_settings = function(type, tables)
-	if not loader.types[type] then
-		Write.Error("%s is not a valid global key", type)
+settings.set_global_settings = function(loader_type, tables)
+	if not loader.types[loader_type] then
+		Write.Error("%s is not a valid global key", loader_type)
 		return
 	end
 
 	local global_settings = settings.init_global_settings()
-	utils.merge(global_settings[type], tables)
+	utils.merge(global_settings[loader_type], tables)
 
 	settings.save_global_settings(global_settings)
 end
 
-settings.remove_and_save_global_settings = function(global_settings, type, key)
-	if not loader.types[type] then
-		Write.Error("%s is not a valid global key", type)
+settings.remove_and_save_global_settings = function(global_settings, loader_type, key)
+	if not loader.types[loader_type] then
+		Write.Error("%s is not a valid global key", loader_type)
 		return
 	end
 
-	global_settings[type][key] = nil
-	settings.remove_global_settings(type, key)
+	if type(key) == "number" then
+		table.remove(global_settings[loader_type], key)
+	else
+		global_settings[loader_type][key] = nil
+	end
+
+	settings.remove_global_settings(loader_type, key)
 end
 
-settings.update_and_save_global_settings = function(global_settings, type, tables)
-	if not loader.types[type] then
-		Write.Error("%s is not a valid global key", type)
+settings.update_and_save_global_settings = function(global_settings, loader_type, tables)
+	if not loader.types[loader_type] then
+		Write.Error("%s is not a valid global key", loader_type)
 		return
 	end
 
-	utils.merge(global_settings[type], tables)
-	settings.set_global_settings(type, tables)
+	utils.merge(global_settings[loader_type], tables)
+	settings.set_global_settings(loader_type, tables)
 end
 
 return settings

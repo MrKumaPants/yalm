@@ -7,6 +7,7 @@ local Item = require("yalm.definitions.Item")
 
 local database = require("yalm.lib.database")
 local utils = require("yalm.lib.utils")
+local inspect = require("yalm.lib.inspect")
 
 local evaluate = {}
 
@@ -42,8 +43,8 @@ evaluate.check_loot_conditions = function(item, loot_conditions, set_conditions)
 		if loot_conditions[condition.name] and loot_conditions[condition.name].loaded then
 			local condition_item = item
 			-- this is an advlootitem
-			if condition_item.Index then
-				condition_item = Item:new(nil, database.QueryDatabaseForItem(item.ID()))
+			if condition_item.Index and item.ID() then
+				condition_item = Item:new(nil, database.QueryDatabaseForItemId(item.ID()))
 			end
 			local success, result = pcall(loot_conditions[condition.name].func.condition_func, condition_item)
 			if success and result then
@@ -122,22 +123,22 @@ evaluate.parse_preference_string = function(preference)
 end
 
 evaluate.convert_rule_preference = function(item, preference)
-	local converted = utils.shallow_copy(preference)
+	local converted = utils.deep_copy(preference)
 
-	if type(converted) == "string" then
+	if type(preference) == "string" then
 		return evaluate.parse_preference_string(preference)
 	end
 
-	if type(converted["setting"]) == "function" then
-		converted["setting"] = converted["setting"](item)
+	if type(preference["setting"]) == "function" then
+		converted["setting"] = preference["setting"](item)
 	end
 
-	if type(converted["quantity"]) == "function" then
-		converted["quantity"] = converted["quantity"](item)
+	if type(preference["quantity"]) == "function" then
+		converted["quantity"] = preference["quantity"](item)
 	end
 
-	if type(converted["list"]) == "function" then
-		converted["list"] = converted["list"](item)
+	if type(preference["list"]) == "function" then
+		converted["list"] = preference["list"](item)
 	end
 
 	return converted

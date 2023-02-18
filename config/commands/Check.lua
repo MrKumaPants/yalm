@@ -44,26 +44,16 @@ end
 local function action(global_settings, char_settings, args)
 	if mq.TLO.Cursor.ID() then
 		local item = mq.TLO.Cursor
+
 		Write.Info("Checking preference for item on cursor...")
 		check_item(item, global_settings, char_settings)
+
 		Write.Info("Putting \a-t%s\ax into inventory", item.Name())
 		mq.cmd("/autoinventory")
 	else
 		Write.Info("Checking preference for items in inventory...")
-		for i = 23, 32 do
-			local inventory_item = mq.TLO.Me.Inventory(i)
 
-			if inventory_item.Name() then
-				if helpers.is_valid_container(inventory_item) then
-					for j = 1, inventory_item.Container() do
-						local item = mq.TLO.Me.Inventory(i).Item(j)
-						check_item(item, global_settings, char_settings)
-					end
-				else
-					check_item(inventory_item, global_settings, char_settings)
-				end
-			end
-		end
+		helpers.call_func_on_inventory(check_item, global_settings, char_settings)
 	end
 
 	Write.Info("Finished checking")

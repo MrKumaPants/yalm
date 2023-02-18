@@ -8,30 +8,33 @@ local settings = require("yalm.config.settings")
 local utils = require("yalm.lib.utils")
 
 local function action(global_settings, char_settings, args)
-	local item_name, global_or_character = nil, "character"
-
-	if not args[2] then
-		Write.Error("No preference specified")
-		return
-	end
+	local item_name, global_or_character, preference = nil, "me", nil
 
 	if mq.TLO.Cursor.ID() then
 		item_name = mq.TLO.Cursor.Name()
+		preference = args[2]
 	end
 
 	if not item_name then
-		if not args[3] then
+		if not args[2] then
 			Write.Error("No item specified")
 			return
 		end
 
-		item_name = args[3]
+		item_name = args[2]
 		if item_name:sub(1, 1) == '"' and item_name:sub(item_name:len()) == '"' then
 			item_name = item_name:sub(2, item_name:len() - 1)
 		end
+
+		preference = args[3]
 	end
 
-	local preference = evaluate.parse_preference_string(args[2])
+	if not preference then
+		Write.Error("No preference specified")
+		return
+	end
+
+	preference = evaluate.parse_preference_string(preference)
 
 	if not evaluate.is_valid_preference(global_settings.preferences, preference) then
 		Write.Error("Invalid loot preference for \a-t%s\ax", item_name)

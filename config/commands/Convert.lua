@@ -2,12 +2,26 @@ local mq = require("mq")
 
 local evaluate = require("yalm.core.evaluate")
 local loader = require("yalm.core.loader")
+
+local configuration = require("yalm.config.configuration")
 local settings = require("yalm.config.settings")
 
 local LIP = require("yalm.lib.LIP")
 local utils = require("yalm.lib.utils")
 
-local function action(global_settings, char_settings, args)
+local command = {}
+
+command.help = function(global_settings, char_settings, type, args)
+	Write.Help("\at[\ax\ay/yalm command help\ax\at]\ax")
+	Write.Help("\axSubcommands Available:")
+	Write.Help("\t  \ayhelp\ax -- Display this help output")
+	Write.Help("\t  \ayadvloot\ax -- Converts Lootly file")
+	Write.Help("\t  \aylootly\ax -- Converts AdvLoot files")
+	Write.Help("\t  \ayset <setting> <value>\ax -- Updates setting to the given value")
+	Write.Help("\axSettings Available:")
+end
+
+command.lootly = function(global_settings, char_settings, type, args)
 	local lootly_file = ("%s/Lootly_Loot.ini"):format(mq.configDir)
 
 	if not utils.file_exists(lootly_file) then
@@ -36,6 +50,79 @@ local function action(global_settings, char_settings, args)
 	settings.update_and_save_global_settings(global_settings, loader.types.items, items)
 
 	Write.Info("Finished converting")
+end
+
+local function get_advloot_ini_path(advloot_rule)
+	return ("%s/userdata/LF_%s_%s_%s.ini"):format(
+		mq.TLO.EverQuest.Path(),
+		advloot_rule,
+		mq.TLO.Me.CleanName(),
+		mq.TLO.EverQuest.Server()
+	)
+end
+
+command.advloot = function(global_settings, char_settings, type, args)
+	local advloot_rules = {
+		"AN",
+		"AG",
+		"NVR",
+		"RND",
+	}
+
+	Write.Info("Converting AdvLoot files...")
+
+	for i = 1, #advloot_rules do
+		local advloot_rule = advloot_rules[i]
+		local advloot_file = get_advloot_ini_path(advloot_rule)
+
+		if utils.file_exists(advloot_file) then
+			local file = assert(io.open(advloot_file, "r"), "Error loading file : " .. advloot_file)
+			for line in file:lines() do
+				if not line:find("^#") then
+					local item = utils.split(line, "^")
+					local item_name = item[3]
+					if item_name then
+						if advloot_rule == "NVR" then
+							char_settings["items"][item_name] = {
+								["setting"] = "Leave",
+							}
+						else
+							char_settings["items"][item_name] = {
+								["setting"] = "Keep",
+							}
+						end
+
+						Write.Info(
+							"Found item \a-t%s\ax with %s",
+							item_name,
+							utils.get_item_preference_string(char_settings["items"][item_name])
+						)
+					end
+				end
+			end
+			file:close()
+		end
+	end
+
+	settings.save_char_settings(char_settings)
+
+	Write.Info("Finished converting")
+end
+
+command.valid_subcommands = {
+	["help"] = {
+		func = command.help,
+	},
+	["lootly"] = {
+		func = command.lootly,
+	},
+	["advloot"] = {
+		func = command.advloot,
+	},
+}
+
+local function action(global_settings, char_settings, args)
+	configuration.action(command, global_settings, char_settings, configuration.types.command.name, args)
 end
 
 return { action_func = action }
