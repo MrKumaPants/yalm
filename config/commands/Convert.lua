@@ -47,7 +47,11 @@ command.lootly = function(global_settings, char_settings, type, args)
 		end
 	end
 
+	Write.Info("Saving configuration...")
+
 	settings.update_and_save_global_settings(global_settings, loader.types.items, items)
+
+	Write.Info("Finished saving")
 
 	Write.Info("Finished converting")
 end
@@ -104,7 +108,11 @@ command.advloot = function(global_settings, char_settings, type, args)
 		end
 	end
 
+	Write.Info("Saving character configuration...")
+
 	settings.save_char_settings(char_settings)
+
+	Write.Info("Finished saving")
 
 	Write.Info("Finished converting")
 end

@@ -1,5 +1,7 @@
 --- @type Mq
 local mq = require("mq")
+local PackageMan = require("mq/PackageMan")
+local lfs = PackageMan.Require("luafilesystem", "lfs")
 
 local loader = {
 	types = {
@@ -12,16 +14,16 @@ local loader = {
 	},
 }
 
-loader.filename = function(name, type)
-	return ("%s/yalm/config/%s/%s.lua"):format(mq.luaDir, type, name)
+loader.filename = function(name, loot_type)
+	return ("%s/yalm/config/%s/%s.lua"):format(mq.luaDir, loot_type, name)
 end
 
-loader.packagename = function(name, type)
-	return ("yalm.config.%s.%s"):format(type, name)
+loader.packagename = function(name, loot_type)
+	return ("yalm.config.%s.%s"):format(loot_type, name)
 end
 
-loader.unload_package = function(name, type)
-	package.loaded[loader.packagename(name, type)] = nil
+loader.unload_package = function(name, loot_type)
+	package.loaded[loader.packagename(name, loot_type)] = nil
 end
 
 loader.should_load = function(loot_type, char_settings)
@@ -39,7 +41,11 @@ loader.should_load = function(loot_type, char_settings)
 	return false
 end
 
-loader.load = function(rule, loot_type)
+loader.load = function(rule, loot_type, reload)
+	if reload then
+		loader.unload_package(rule.name, loot_type)
+	end
+
 	local success, result = pcall(require, ("yalm.config.%s.%s"):format(loot_type, rule.name))
 	if not success then
 		result = nil
@@ -81,6 +87,7 @@ loader.load = function(rule, loot_type)
 		end
 		Write.Info("Registering %s: \ao%s\ax", loot_type, rule.name)
 		rule.loaded = true
+		rule.timestamp = lfs.attributes(loader.filename(rule.name, loot_type)).modification
 	end
 end
 
@@ -97,11 +104,19 @@ loader.reload = function(rule, loot_type)
 	loader.load(rule, loot_type)
 end
 
+loader.has_modified = function(rule, loot_type)
+	local old_timestamp = rule.timestamp or 0
+	local current_timestamp = lfs.attributes(loader.filename(rule.name, loot_type)).modification
+	return current_timestamp > old_timestamp
+end
+
 loader.manage = function(rule_list, loot_type, char_settings)
 	for _, rule in pairs(rule_list) do
 		local load_event = loader.should_load(loot_type, char_settings)
-		if not rule.loaded and not rule.failed and load_event then
-			loader.load(rule, loot_type)
+		local has_modified = loader.has_modified(rule, loot_type)
+
+		if (has_modified or not rule.loaded) and not rule.failed and load_event then
+			loader.load(rule, loot_type, has_modified)
 		elseif rule.loaded and not load_event then
 			loader.unload(rule, loot_type)
 		end

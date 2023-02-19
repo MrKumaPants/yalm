@@ -18,6 +18,12 @@ utils.delete_file = function(source)
 	os.remove(source)
 end
 
+utils.write_file = function(path, contents)
+	local f = io.open(path, "w")
+	f:write(contents)
+	io.close(f)
+end
+
 utils.file_exists = function(path)
 	local f = io.open(path, "r")
 	if f ~= nil then
@@ -60,6 +66,20 @@ utils.merge = function(t1, t2)
 		end
 	end
 	return t1
+end
+
+utils.shallow_copy = function(orig)
+	local orig_type = type(orig)
+	local copy
+	if orig_type == "table" then
+		copy = {}
+		for orig_key, orig_value in pairs(orig) do
+			copy[orig_key] = orig_value
+		end
+	else
+		copy = orig
+	end
+	return copy
 end
 
 utils.deep_copy = function(original)

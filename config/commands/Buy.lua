@@ -33,15 +33,20 @@ local function buy_item(item, global_settings, char_settings)
 	local preference = get_buy_preference(item, global_settings, char_settings)
 
 	if preference then
-		local count, buy_count = 0, 0
+		local buy_count, count = 0, 0
 
 		repeat
 			local item_count = mq.TLO.FindItemCount(item.ID())() or 0
 			local bank_count = mq.TLO.FindItemBankCount(item.ID())() or 0
 			count = item_count + bank_count
 
+			buy_count = 0
+
 			if preference.quantity and count < preference.quantity then
 				buy_count = preference.quantity - count
+				if buy_count > item.StackSize() then
+					buy_count = item.StackSize()
+				end
 			end
 
 			if buy_count > 0 then

@@ -34,7 +34,7 @@ local settings = require("yalm.config.settings")
 
 local utils = require("yalm.lib.utils")
 
-local version = "0.7.0"
+local version = "0.8.1"
 
 -- application state
 local state = {
@@ -142,16 +142,16 @@ local function initialize()
 	mq.bind("/yalm", cmd_handler)
 
 	global_settings, char_settings = settings.init_settings()
-
-	loader.manage(global_settings.commands, loader.types.commands, char_settings)
-	loader.manage(global_settings.conditions, loader.types.conditions, char_settings)
-	loader.manage(global_settings.rules, loader.types.rules, char_settings)
 end
 
 local function main()
 	initialize()
 
 	while not state.terminate do
+		loader.manage(global_settings.commands, loader.types.commands, char_settings)
+		loader.manage(global_settings.conditions, loader.types.conditions, char_settings)
+		loader.manage(global_settings.rules, loader.types.rules, char_settings)
+
 		looting.handle_master_looting(global_settings)
 		looting.handle_personal_loot()
 		looting.handle_solo_looting(global_settings)

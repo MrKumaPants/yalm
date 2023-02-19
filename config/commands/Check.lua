@@ -3,7 +3,11 @@ local mq = require("mq")
 local evaluate = require("yalm.core.evaluate")
 local helpers = require("yalm.core.helpers")
 
+local Item = require("yalm.definitions.Item")
+
+local database = require("yalm.lib.database")
 local utils = require("yalm.lib.utils")
+local inspect = require("yalm.lib.inspect")
 
 local function get_item_preference(item, global_settings, char_settings)
 	if item.Name() then
@@ -42,14 +46,37 @@ local function check_item(item, global_settings, char_settings)
 end
 
 local function action(global_settings, char_settings, args)
-	if mq.TLO.Cursor.ID() then
-		local item = mq.TLO.Cursor
+	local item, item_name = nil, nil
 
+	Write.Info("%s", inspect(global_settings))
+
+	if mq.TLO.Cursor.ID() then
+		item_name = mq.TLO.Cursor.Name()
+		item = mq.TLO.Cursor
+	elseif args[2] then
+		item_name = args[2]
+
+		if not item_name then
+			Write.Error("No item specified")
+			return
+		end
+
+		item = Item:new(nil, database.QueryDatabaseForItemName(item_name))
+
+		if not item.item_db then
+			Write.Error("Item \at%s\ax does not exist", item_name)
+			return
+		end
+	end
+
+	if item_name then
 		Write.Info("Checking preference for item on cursor...")
 		check_item(item, global_settings, char_settings)
 
-		Write.Info("Putting \a-t%s\ax into inventory", item.Name())
-		mq.cmd("/autoinventory")
+		if mq.TLO.Cursor.ID() then
+			Write.Info("Putting \a-t%s\ax into inventory", item.Name())
+			mq.cmd("/autoinventory")
+		end
 	else
 		Write.Info("Checking preference for items in inventory...")
 

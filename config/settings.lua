@@ -3,7 +3,7 @@ local mq = require("mq")
 
 local loader = require("yalm.core.loader")
 
-local persistence = require("yalm.lib.persistence")
+local serpent = require("yalm.lib.serpent")
 local utils = require("yalm.lib.utils")
 
 -- default application settings
@@ -96,17 +96,6 @@ local default_global_settings = {
 	},
 	["conditions"] = {},
 	["items"] = {},
-	["settings"] = {
-		["always_loot"] = true,
-		["distribute_delay"] = "1s",
-		["frequency"] = 250,
-		["save_slots"] = 3,
-		["unmatched_item_delay"] = "10s",
-		["dannet_delay"] = 250,
-		["unmatched_item_rule"] = {
-			["setting"] = "Keep",
-		},
-	},
 	["preferences"] = {
 		["Buy"] = {
 			["name"] = "Buy",
@@ -133,6 +122,17 @@ local default_global_settings = {
 		},
 	},
 	["rules"] = {},
+	["settings"] = {
+		["always_loot"] = true,
+		["distribute_delay"] = "1s",
+		["frequency"] = 250,
+		["save_slots"] = 3,
+		["unmatched_item_delay"] = "10s",
+		["dannet_delay"] = 250,
+		["unmatched_item_rule"] = {
+			["setting"] = "Keep",
+		},
+	},
 }
 
 -- default yalm configuration settings
@@ -141,6 +141,8 @@ local default_yalm_settings = {
 	["commands"] = {},
 	["conditions"] = {},
 	["items"] = {},
+	["preferences"] = {},
+	["rules"] = {},
 	["settings"] = {
 		["always_loot"] = true,
 		["save_slots"] = 3,
@@ -148,20 +150,27 @@ local default_yalm_settings = {
 			["setting"] = "Keep",
 		},
 	},
-	["preferences"] = {},
-	["rules"] = {},
 }
 
 -- default char settings
 local default_char_settings = {
 	["items"] = {},
 	["settings"] = {},
+	["save"] = {},
 	["rules"] = {},
 }
 
 local settings = {}
 
 settings.init_char_settings = function(character)
+	local char_settings = settings.load_char_settings(character)
+	local default_copy = utils.deep_copy(default_char_settings)
+	char_settings = utils.merge(default_copy, char_settings)
+
+	return char_settings
+end
+
+settings.load_char_settings = function(character)
 	local char_settings
 
 	local filename = ("%s/YALM/yalm-%s-%s.lua"):format(
@@ -177,13 +186,22 @@ settings.init_char_settings = function(character)
 		char_settings = module
 	end
 
-	local default_copy = utils.deep_copy(default_char_settings)
-	char_settings = utils.merge(default_copy, char_settings)
-
 	return char_settings
 end
 
 settings.init_global_settings = function()
+	local global_settings = settings.load_global_settings()
+
+	local default_copy = utils.deep_copy(default_global_settings)
+	global_settings["categories"] = utils.table_concat(default_copy["categories"], global_settings["categories"])
+	global_settings["commands"] = utils.merge(global_settings["commands"], default_copy["commands"])
+	global_settings["settings"] = utils.merge(global_settings["settings"], default_copy["settings"])
+	global_settings["preferences"] = utils.merge(global_settings["preferences"], default_copy["preferences"])
+
+	return global_settings
+end
+
+settings.load_global_settings = function()
 	local global_settings
 
 	local filename = ("%s/YALM.lua"):format(mq.configDir)
@@ -195,12 +213,6 @@ settings.init_global_settings = function()
 		local module, error = loadfile(filename)()
 		global_settings = module
 	end
-
-	local default_copy = utils.deep_copy(default_global_settings)
-	global_settings["categories"] = utils.table_concat(default_copy["categories"], global_settings["categories"])
-	global_settings["commands"] = utils.merge(global_settings["commands"], default_copy["commands"])
-	global_settings["settings"] = utils.merge(global_settings["settings"], default_copy["settings"])
-	global_settings["preferences"] = utils.merge(global_settings["preferences"], default_copy["preferences"])
 
 	return global_settings
 end
@@ -219,13 +231,15 @@ settings.init_settings = function(character)
 end
 
 settings.save_global_settings = function(global_settings)
-	persistence.store(("%s/YALM.lua"):format(mq.configDir), global_settings)
+	local content = serpent.dump(global_settings, { compact = false, indent = "   ", sortkeys = true, sparse = true })
+	utils.write_file(("%s/YALM.lua"):format(mq.configDir), content)
 end
 
 settings.save_char_settings = function(char_settings)
-	persistence.store(
+	local content = serpent.dump(char_settings, { compact = false, indent = "   ", sortkeys = true, sparse = true })
+	utils.write_file(
 		("%s/YALM/yalm-%s-%s.lua"):format(mq.configDir, mq.TLO.EverQuest.Server(), mq.TLO.Me.CleanName():lower()),
-		char_settings
+		content
 	)
 end
 
@@ -235,7 +249,7 @@ settings.remove_global_settings = function(loader_type, key)
 		return
 	end
 
-	local global_settings = settings.init_global_settings()
+	local global_settings = settings.load_global_settings()
 
 	if type(key) == "number" then
 		table.remove(global_settings[loader_type], key)
@@ -252,7 +266,7 @@ settings.set_global_settings = function(loader_type, tables)
 		return
 	end
 
-	local global_settings = settings.init_global_settings()
+	local global_settings = settings.load_global_settings()
 	utils.merge(global_settings[loader_type], tables)
 
 	settings.save_global_settings(global_settings)

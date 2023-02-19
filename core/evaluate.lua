@@ -7,6 +7,7 @@ local Item = require("yalm.definitions.Item")
 
 local database = require("yalm.lib.database")
 local utils = require("yalm.lib.utils")
+
 local inspect = require("yalm.lib.inspect")
 
 local evaluate = {}
@@ -113,7 +114,7 @@ evaluate.parse_preference_string = function(preference)
 
 	local setting = parts[1]
 	local quantity = tonumber(parts[2])
-	local list = parts[3]
+	local list = parts[3] and utils.split(parts[3], ",") or nil
 
 	return {
 		["setting"] = setting,
@@ -123,7 +124,7 @@ evaluate.parse_preference_string = function(preference)
 end
 
 evaluate.convert_rule_preference = function(item, preference)
-	local converted = utils.deep_copy(preference)
+	local converted = utils.shallow_copy(preference)
 
 	if type(preference) == "string" then
 		return evaluate.parse_preference_string(preference)

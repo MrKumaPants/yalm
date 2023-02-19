@@ -30,7 +30,7 @@ function Item:new(o, item_db)
 end
 
 Item.AugSlot1 = function()
-	return Item.item_db.augslot1type
+	return self.item_db.augslot1type
 end
 
 Item.AugSlot2 = function()
@@ -84,7 +84,7 @@ Item.Class = function(class)
 end
 
 Item.Classes = function()
-	local slots = parseFlags(Item.item_db.slots, Classes)
+	local slots = parseFlags(Item.item_db.classes, Classes)
 	return #slots
 end
 

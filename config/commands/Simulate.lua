@@ -16,10 +16,7 @@ local function action(global_settings, char_settings, args)
 		return
 	end
 
-	local loot_list_tlo = looting.get_loot_tlos()
-
 	if mq.TLO.Cursor.ID() then
-		Write.Info("FOO")
 		item_name = mq.TLO.Cursor.Name()
 		item = mq.TLO.Cursor
 	else
