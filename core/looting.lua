@@ -1,8 +1,8 @@
 ---@type Mq
 local mq = require("mq")
 
-local inventory = require("yalm.core.inventory")
 local evaluate = require("yalm.core.evaluate")
+local inventory = require("yalm.core.inventory")
 
 local utils = require("yalm.lib.utils")
 
@@ -60,7 +60,7 @@ looting.get_member_count = function(tlo)
 end
 
 looting.get_valid_member = function(tlo, index)
-	local member = nil
+	local member
 
 	if index == 0 or mq.TLO[tlo].Member(index).Name() == mq.TLO.Me.CleanName() then
 		member = mq.TLO.Me
@@ -68,52 +68,50 @@ looting.get_valid_member = function(tlo, index)
 		member = mq.TLO[tlo].Member(index)
 	end
 
-	if member.ID() == 0 then
+	if member.ID() == 0 or member.Spawn.Dead() then
 		return nil
 	end
 
 	return member
 end
 
-looting.get_member_can_loot = function(item, loot, save_slots, dannet_delay, always_loot, unmatched_item_rule)
+looting.get_member_can_loot = function(
+	item,
+	loot,
+	save_slots,
+	dannet_delay,
+	always_loot,
+	check_unmatched,
+	unmatched_item_rule
+)
 	local group_or_raid_tlo = looting.get_group_or_raid_tlo()
 
-	local can_loot, member, preference = false, nil, nil
-	local check_unmatched = nil
+	local can_loot, check_rematch, member, preference = false, true, nil, nil
 
 	local count = looting.get_member_count(group_or_raid_tlo)
 
-	for i = 1, 2 do
-		for j = 0, (count - 1) do
-			member = looting.get_valid_member(group_or_raid_tlo, j)
+	for i = 0, (count - 1) do
+		member = looting.get_valid_member(group_or_raid_tlo, i)
 
-			if member then
-				can_loot, preference = evaluate.check_can_loot(
-					member,
-					item,
-					loot,
-					save_slots,
-					dannet_delay,
-					always_loot,
-					check_unmatched and unmatched_item_rule or nil
-				)
+		if member then
+			can_loot, check_rematch, preference = evaluate.check_can_loot(
+				member,
+				item,
+				loot,
+				save_slots,
+				dannet_delay,
+				always_loot,
+				check_unmatched,
+				unmatched_item_rule
+			)
 
-				if can_loot then
-					break
-				end
+			if can_loot then
+				break
 			end
-		end
-
-		if can_loot then
-			break
-		end
-
-		if preference == nil then
-			check_unmatched = true
 		end
 	end
 
-	return can_loot, member, preference
+	return can_loot, check_rematch, member, preference
 end
 
 looting.handle_master_looting = function(global_settings)
@@ -134,37 +132,41 @@ looting.handle_master_looting = function(global_settings)
 		return
 	end
 
-	local can_loot, member, preference = looting.get_member_can_loot(
+	local can_loot, check_rematch, member, preference = looting.get_member_can_loot(
 		item,
 		global_settings,
 		global_settings.settings.save_slots,
 		global_settings.settings.dannet_delay,
 		false,
+		false,
 		global_settings.settings.unmatched_item_rule
 	)
 
-	if not can_loot and global_settings.settings.always_loot then
+	if not can_loot and check_rematch and global_settings.settings.always_loot and preference then
 		Write.Warn("No one matched \a-t%s\ax loot preference", item_name)
 		Write.Warn("Trying again ignoring quantity and list")
 
-		can_loot, member, preference = looting.get_member_can_loot(
+		can_loot, check_rematch, member, preference = looting.get_member_can_loot(
 			item,
 			global_settings,
 			global_settings.settings.save_slots,
 			global_settings.settings.dannet_delay,
 			global_settings.settings.always_loot,
+			true,
 			global_settings.settings.unmatched_item_rule
 		)
 	end
 
-	if not preference then
+	if not can_loot or not preference then
 		Write.Warn("No loot preference found for \a-t%s\ax", item_name)
+		mq.delay(global_settings.settings.unmatched_item_delay)
 		looting.leave_item()
 		return
 	end
 
 	if not evaluate.is_valid_preference(global_settings.preferences, preference) then
 		Write.Warn("Invalid loot preference for \a-t%s\ax", item_name)
+		mq.delay(global_settings.settings.unmatched_item_delay)
 		looting.leave_item()
 		return
 	end
@@ -179,35 +181,16 @@ looting.handle_master_looting = function(global_settings)
 
 	if not can_loot then
 		Write.Warn("No one is able to loot \a-t%s\ax", item_name)
+		mq.delay(global_settings.settings.unmatched_item_delay)
 		looting.leave_item()
 		return
 	end
 
 	if item_name == mq.TLO.AdvLoot[loot_list_tlo](1).Name() then
 		Write.Info("Giving \a-t%s\ax to \ao%s\ax", item_name, member)
-		mq.delay(global_settings.distribute_delay)
+		mq.delay(global_settings.settings.distribute_delay)
 		looting.give_item(member)
 	end
-end
-
-looting.handle_personal_loot = function()
-	if looting.is_solo_looter() then
-		return
-	end
-
-	if mq.TLO.AdvLoot.LootInProgress() then
-		return
-	end
-
-	local item = mq.TLO.AdvLoot.PList(1)
-	local item_name = item.Name()
-
-	if item == "NULL" or not item_name then
-		return
-	end
-
-	Write.Info("Looting \a-t%s\ax", item_name)
-	looting.loot_item()
 end
 
 looting.handle_solo_looting = function(global_settings)
@@ -239,12 +222,14 @@ looting.handle_solo_looting = function(global_settings)
 
 	if not preference then
 		Write.Warn("No loot preference found for \a-t%s\ax", item_name)
+		mq.delay(global_settings.settings.unmatched_item_delay)
 		looting.leave_item()
 		return
 	end
 
 	if not evaluate.is_valid_preference(global_settings.preferences, preference) then
 		Write.Warn("Invalid loot preference for \a-t%s\ax", item_name)
+		mq.delay(global_settings.settings.unmatched_item_delay)
 		looting.leave_item()
 		return
 	end
@@ -259,15 +244,36 @@ looting.handle_solo_looting = function(global_settings)
 
 	if not can_loot then
 		Write.Warn("You are unable to loot \a-t%s\ax", item_name)
+		mq.delay(global_settings.settings.unmatched_item_delay)
 		looting.leave_item()
 		return
 	end
 
 	if item_name == mq.TLO.AdvLoot.PList(1).Name() then
 		Write.Info("Looting \a-t%s\ax", item_name)
-		mq.delay(global_settings.distribute_delay)
+		mq.delay(global_settings.settings.distribute_delay)
 		looting.loot_item()
+
+		inventory.check_lore_equip_prompt()
 	end
+end
+
+looting.handle_personal_loot = function()
+	if looting.is_solo_looter() then
+		return
+	end
+
+	local item = mq.TLO.AdvLoot.PList(1)
+	local item_name = item.Name()
+
+	if item == "NULL" or not item_name then
+		return
+	end
+
+	Write.Info("Looting \a-t%s\ax", item_name)
+	looting.loot_item()
+
+	inventory.check_lore_equip_prompt()
 end
 
 return looting

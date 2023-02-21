@@ -34,7 +34,7 @@ local settings = require("yalm.config.settings")
 
 local utils = require("yalm.lib.utils")
 
-local version = "0.8.1"
+local version = "0.6.10"
 
 -- application state
 local state = {
@@ -98,7 +98,6 @@ local function print_help()
 	Write.Help("\at[\ax\ayYet Another Loot Manager v%s\ax\at]\ax", version)
 	Write.Help("\axCommands Available:")
 	Write.Help("\t  \ay/yalm help\ax -- Display this help output")
-	--Write.Help("\t  \ay/yalm set <set_name> [on|1|true|off|0|false]\ax -- Toggle the named set on/off")
 	Write.Help("\t  \ay/yalm reload\ax -- Reload settings (Currently just restarts the script)")
 
 	print_command_help()
@@ -139,6 +138,11 @@ end
 local function initialize()
 	utils.plugin_check()
 
+	if not mq.TLO.Me.UseAdvancedLooting() then
+		Write.Error("You must have AdvLoot enabled")
+		mq.exit()
+	end
+
 	mq.bind("/yalm", cmd_handler)
 
 	global_settings, char_settings = settings.init_settings()
@@ -148,13 +152,17 @@ local function main()
 	initialize()
 
 	while not state.terminate do
-		loader.manage(global_settings.commands, loader.types.commands, char_settings)
-		loader.manage(global_settings.conditions, loader.types.conditions, char_settings)
-		loader.manage(global_settings.rules, loader.types.rules, char_settings)
+		if not mq.TLO.Me.Dead() then
+			global_settings, char_settings = settings.reload_settings(global_settings, char_settings)
 
-		looting.handle_master_looting(global_settings)
-		looting.handle_personal_loot()
-		looting.handle_solo_looting(global_settings)
+			loader.manage(global_settings.commands, loader.types.commands, char_settings)
+			loader.manage(global_settings.conditions, loader.types.conditions, char_settings)
+			loader.manage(global_settings.rules, loader.types.rules, char_settings)
+
+			looting.handle_master_looting(global_settings)
+			looting.handle_solo_looting(global_settings)
+			looting.handle_personal_loot()
+		end
 
 		mq.doevents()
 		mq.delay(global_settings.settings.frequency)

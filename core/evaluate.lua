@@ -8,36 +8,57 @@ local Item = require("yalm.definitions.Item")
 local database = require("yalm.lib.database")
 local utils = require("yalm.lib.utils")
 
-local inspect = require("yalm.lib.inspect")
-
 local evaluate = {}
 
-evaluate.check_can_loot = function(member, item, loot, save_slots, dannet_delay, always_loot, unmatched_item_rule)
-	local preference = evaluate.get_loot_preference_for_member(member, item, loot, unmatched_item_rule)
+evaluate.check_can_loot = function(
+	member,
+	item,
+	loot,
+	save_slots,
+	dannet_delay,
+	always_loot,
+	check_unmatached,
+	unmatched_item_rule
+)
+	local char_settings =
+		evaluate.get_member_char_settings(member, save_slots, dannet_delay, always_loot, unmatched_item_rule)
+
+	local char_save_slots = char_settings.settings.save_slots
+	local char_dannet_delay = char_settings.settings.dannet_delay
+	local char_always_loot = char_settings.settings.always_loot
+	local char_unmatched_item_rule = char_settings.settings.unmatched_item_rule
+
+	local preference = evaluate.get_loot_preference(item, loot, char_settings, char_unmatched_item_rule)
 
 	local can_loot = evaluate.check_loot_preference(preference, loot)
 
+	if can_loot and not check_unmatached then
+		can_loot = inventory.check_group_member(member, preference.list, char_dannet_delay, char_always_loot)
+	end
+
+	local check_rematch = true
+
 	if can_loot then
-		can_loot = inventory.check_group_member(member, preference.list, dannet_delay, always_loot)
+		can_loot = inventory.check_lore(member, item, char_dannet_delay)
+		check_rematch = can_loot
 	end
 
 	if can_loot then
-		can_loot = inventory.check_inventory(member, item, save_slots, dannet_delay)
+		local total_save_slots =
+			inventory.check_total_save_slots(member, char_settings, char_save_slots, char_dannet_delay)
+		can_loot = inventory.check_inventory(member, item, total_save_slots, char_dannet_delay)
+		check_rematch = can_loot
 	end
 
 	if can_loot then
-		can_loot = inventory.check_quantity(member, item, preference.quantity, dannet_delay, always_loot)
+		can_loot = inventory.check_quantity(member, item, preference.quantity, char_dannet_delay, char_always_loot)
 	end
 
-	if can_loot then
-		can_loot = inventory.check_lore(member, item, dannet_delay)
-	end
-
-	return can_loot, preference
+	return can_loot, check_rematch, preference
 end
 
 evaluate.check_loot_conditions = function(item, loot_conditions, set_conditions)
-	local preference = nil
+	local preference
 
 	for i in ipairs(set_conditions) do
 		local condition = set_conditions[i]
@@ -59,7 +80,7 @@ evaluate.check_loot_conditions = function(item, loot_conditions, set_conditions)
 end
 
 evaluate.check_loot_items = function(item, loot_items)
-	local preference = nil
+	local preference
 
 	if loot_items[item.Name()] then
 		preference = evaluate.convert_rule_preference(item, loot_items[item.Name()])
@@ -85,7 +106,7 @@ evaluate.check_loot_preference = function(preference, loot)
 end
 
 evaluate.check_loot_rules = function(item, loot_conditions, loot_rules, char_rules)
-	local preference = nil
+	local preference
 
 	for i in ipairs(char_rules) do
 		local rule = char_rules[i]
@@ -145,24 +166,32 @@ evaluate.convert_rule_preference = function(item, preference)
 	return converted
 end
 
-evaluate.get_loot_preference_for_member = function(member, item, loot, unmatched_item_rule)
-	local merged_unmatched_item_rule = nil
-
+evaluate.get_member_char_settings = function(member, save_slots, dannet_delay, always_loot, unmatched_item_rule)
 	local char_name = member.CleanName():lower()
 
 	local char_settings = settings.init_char_settings(char_name)
 
-	if unmatched_item_rule then
-		merged_unmatched_item_rule = char_settings.unmatched_item_rule or unmatched_item_rule
+	if char_settings.settings.save_slots == nil then
+		char_settings.settings.save_slots = save_slots
 	end
 
-	local preference = evaluate.get_loot_preference(item, loot, char_settings, merged_unmatched_item_rule)
+	if char_settings.settings.dannet_delay == nil then
+		char_settings.settings.dannet_delay = dannet_delay
+	end
 
-	return preference
+	if char_settings.settings.save_slots == nil then
+		char_settings.settings.always_loot = always_loot
+	end
+
+	if char_settings.settings.unmatched_item_rule == nil then
+		char_settings.settings.unmatched_item_rule = unmatched_item_rule
+	end
+
+	return char_settings
 end
 
 evaluate.get_loot_preference = function(item, loot, char_settings, unmatched_item_rule)
-	local preference = nil
+	local preference
 
 	if loot.items then
 		preference = evaluate.check_loot_items(item, loot.items)

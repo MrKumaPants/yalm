@@ -7,7 +7,6 @@ local Item = require("yalm.definitions.Item")
 
 local database = require("yalm.lib.database")
 local utils = require("yalm.lib.utils")
-local inspect = require("yalm.lib.inspect")
 
 local function get_item_preference(item, global_settings, char_settings)
 	if item.Name() then
@@ -15,6 +14,7 @@ local function get_item_preference(item, global_settings, char_settings)
 			item,
 			global_settings,
 			char_settings,
+			true,
 			global_settings.settings.unmatched_item_rule
 		)
 
@@ -47,8 +47,6 @@ end
 
 local function action(global_settings, char_settings, args)
 	local item, item_name = nil, nil
-
-	Write.Info("%s", inspect(global_settings))
 
 	if mq.TLO.Cursor.ID() then
 		item_name = mq.TLO.Cursor.Name()

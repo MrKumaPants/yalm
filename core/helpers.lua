@@ -21,6 +21,10 @@ end
 helpers.open_npc_window = function(npc_class)
 	local npc = mq.TLO.NearestSpawn(('class "%s"'):format(npc_class))
 
+	if npc_class == "Merchant" and npc.CleanName() == "Parcel Delivery Liason" then
+		npc = mq.TLO.NearestSpawn(2, ('class "%s"'):format(npc_class))
+	end
+
 	if npc.Class() == npc_class then
 		npc.DoTarget()
 		npc.RightClick()

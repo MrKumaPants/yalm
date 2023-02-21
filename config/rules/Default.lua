@@ -1,5 +1,3 @@
--- Persistent Data
-local multiRefObjects = {} -- multiRefObjects
 local obj1 = {
 	["conditions"] = {
 		[1] = {
@@ -7,9 +5,9 @@ local obj1 = {
 			["setting"] = "Destroy",
 		},
 		[2] = {
-			["name"] = "Poisons",
-			["setting"] = "Destroy",
-			["list"] = "ROG",
+			["name"] = "Quest",
+			["setting"] = "Keep",
+			["quantity"] = 1,
 		},
 		[3] = {
 			["name"] = "Scrolls",

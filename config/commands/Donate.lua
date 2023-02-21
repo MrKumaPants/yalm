@@ -15,6 +15,7 @@ local function can_donate_item(item, global_settings, char_settings)
 			item,
 			global_settings,
 			char_settings,
+			true,
 			global_settings.settings.unmatched_item_rule
 		)
 
@@ -36,8 +37,6 @@ local function donate_item(item, global_settings, char_settings)
 	local can_sell = can_donate_item(item, global_settings, char_settings)
 
 	if can_sell then
-		local stack = item.Stack()
-
 		if item.ItemSlot2() ~= nil then
 			mq.cmdf("/shift /itemnotify in pack%s %s leftmouseup", item.ItemSlot() - 22, item.ItemSlot2() + 1)
 		else
@@ -51,7 +50,7 @@ local function donate_item(item, global_settings, char_settings)
 		end
 
 		-- donate item
-		mq.cmdf("/nomodkey /notify TributeMasterWnd TMW_DonateButton leftmouseup")
+		mq.cmdf("/shift /notify TributeMasterWnd TMW_DonateButton leftmouseup")
 		mq.delay(1000)
 
 		while is_donate_button_enabled() do
@@ -69,13 +68,13 @@ local function action(global_settings, char_settings, args)
 
 	if helpers.ready_tribute_window(true, args[2]) then
 		Write.Info("Donating items...")
+		mq.cmd("/keypress OPEN_INV_BAGS")
 
 		helpers.call_func_on_inventory(donate_item, global_settings, char_settings)
 
 		Write.Info("Finished donating")
+		mq.cmd("/cleanup")
 	end
-
-	mq.cmd("/cleanup")
 end
 
 return { action_func = action }

@@ -10,6 +10,7 @@ local function can_destroy_item(item, global_settings, char_settings)
 			item,
 			global_settings,
 			char_settings,
+			true,
 			global_settings.settings.unmatched_item_rule
 		)
 

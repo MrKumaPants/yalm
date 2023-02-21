@@ -62,10 +62,9 @@ local function buy_item(item, global_settings, char_settings)
 end
 
 local function action(global_settings, char_settings, args)
-	Write.Info("Buying items...")
-
 	if helpers.ready_merchant_window(true) then
-		mq.delay(500)
+		Write.Info("Buying items...")
+
 		local item_count = mq.TLO.Merchant.Items()
 
 		while item_count == 0 do
@@ -77,10 +76,10 @@ local function action(global_settings, char_settings, args)
 			local item = mq.TLO.Merchant.Item(i)
 			buy_item(item, global_settings, char_settings)
 		end
-	end
 
-	Write.Info("Finished buying")
-	mq.cmd("/cleanup")
+		Write.Info("Finished buying")
+		mq.cmd("/cleanup")
+	end
 end
 
 return { action_func = action }

@@ -280,7 +280,7 @@ Item.StackSize = function()
 	return Item.item_db.stacksize
 end
 
-Item.TradeSkills = function()
+Item.Tradeskills = function()
 	return Item.item_db.tradeskills > 0
 end
 

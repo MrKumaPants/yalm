@@ -68,6 +68,14 @@ utils.merge = function(t1, t2)
 	return t1
 end
 
+utils.length = function(t1)
+	local l = 0
+	for k, _ in pairs(t1) do
+		l = l + 1
+	end
+	return l
+end
+
 utils.shallow_copy = function(orig)
 	local orig_type = type(orig)
 	local copy

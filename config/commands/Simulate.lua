@@ -13,6 +13,7 @@ local function action(global_settings, char_settings, args)
 	local item, item_name = nil, nil
 
 	if not looting.am_i_master_looter() then
+		Write.Warn("You are not the master looter")
 		return
 	end
 
@@ -37,30 +38,32 @@ local function action(global_settings, char_settings, args)
 
 	Write.Info("Simulating looting for \a-t%s\ax", item_name)
 
-	local can_loot, member, preference = looting.get_member_can_loot(
+	local can_loot, check_rematch, member, preference = looting.get_member_can_loot(
 		item,
 		global_settings,
 		global_settings.settings.save_slots,
 		global_settings.settings.dannet_delay,
 		false,
+		false,
 		global_settings.settings.unmatched_item_rule
 	)
 
-	if not can_loot and global_settings.settings.always_loot then
-		Write.Warn("No one matched \a-t%s\ax loot preference", item.Name())
+	if not can_loot and check_rematch and global_settings.settings.always_loot and preference then
+		Write.Warn("No one matched \a-t%s\ax loot preference", item_name)
 		Write.Warn("Trying again ignoring quantity and list")
 
-		can_loot, member, preference = looting.get_member_can_loot(
+		can_loot, check_rematch, member, preference = looting.get_member_can_loot(
 			item,
 			global_settings,
 			global_settings.settings.save_slots,
 			global_settings.settings.dannet_delay,
 			global_settings.settings.always_loot,
+			true,
 			global_settings.settings.unmatched_item_rule
 		)
 	end
 
-	if not preference then
+	if not can_loot or not preference then
 		Write.Warn("No loot preference found for \a-t%s\ax", item_name)
 		return
 	end

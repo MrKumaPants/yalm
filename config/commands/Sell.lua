@@ -10,6 +10,7 @@ local function can_sell_item(item, global_settings, char_settings)
 			item,
 			global_settings,
 			char_settings,
+			true,
 			global_settings.settings.unmatched_item_rule
 		)
 
@@ -69,9 +70,8 @@ local function action(global_settings, char_settings, args)
 		helpers.call_func_on_inventory(sell_item, global_settings, char_settings)
 
 		Write.Info("Finished selling")
+		mq.cmd("/cleanup")
 	end
-
-	mq.cmd("/cleanup")
 end
 
 return { action_func = action }

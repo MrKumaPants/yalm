@@ -4,17 +4,6 @@ local mq = require("mq")
 local classes = require("yalm.definitions.Classes")
 
 -- Persistent Data
-local multiRefObjects = {} -- multiRefObjects
-
-local function get_setting(item)
-	local setting = "Sell"
-	if mq.TLO.Me.Level() >= item.RequiredLevel() then
-		setting = "Keep"
-	end
-
-	return setting
-end
-
 local function get_quantity(item)
 	local quantity = 1
 	return quantity
@@ -40,7 +29,7 @@ local obj1 = {
 	["conditions"] = {
 		[1] = {
 			["name"] = "Defiant",
-			["setting"] = get_setting,
+			["setting"] = "Guild",
 			["quantity"] = get_quantity,
 			["list"] = get_list,
 		},

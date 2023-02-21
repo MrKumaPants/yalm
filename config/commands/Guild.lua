@@ -68,8 +68,13 @@ end
 
 local function can_deposit_item(item, global_settings, char_settings)
 	if item.Name() then
-		local preference =
-			evaluate.get_loot_preference(item, global_settings, char_settings, global_settings.unmatched_item_rule)
+		local preference = evaluate.get_loot_preference(
+			item,
+			global_settings,
+			char_settings,
+			true,
+			global_settings.settings.unmatched_item_rule
+		)
 
 		if preference then
 			local loot_preference = global_settings.preferences[preference.setting]
@@ -201,9 +206,8 @@ local function action(global_settings, char_settings, args)
 		change_permissions()
 
 		Write.Info("Finished depositing")
+		mq.cmd("/cleanup")
 	end
-
-	mq.cmd("/cleanup")
 end
 
 return { action_func = action }
