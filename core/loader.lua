@@ -11,6 +11,7 @@ local loader = {
 		items = "items",
 		preferences = "preferences",
 		rules = "rules",
+		subcommands = "subcommands",
 	},
 }
 

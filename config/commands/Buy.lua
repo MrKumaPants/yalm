@@ -14,7 +14,7 @@ local function get_buy_preference(item, global_settings, char_settings)
 			global_settings.settings.save_slots,
 			global_settings.settings.dannet_delay,
 			global_settings.settings.always_loot,
-			false
+			global_settings.settings.unmatched_item_rule
 		)
 
 		if can_loot and preference then

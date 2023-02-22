@@ -10,16 +10,7 @@ local utils = require("yalm.lib.utils")
 
 local evaluate = {}
 
-evaluate.check_can_loot = function(
-	member,
-	item,
-	loot,
-	save_slots,
-	dannet_delay,
-	always_loot,
-	check_unmatached,
-	unmatched_item_rule
-)
+evaluate.check_can_loot = function(member, item, loot, save_slots, dannet_delay, always_loot, unmatched_item_rule)
 	local char_settings =
 		evaluate.get_member_char_settings(member, save_slots, dannet_delay, always_loot, unmatched_item_rule)
 
@@ -32,7 +23,7 @@ evaluate.check_can_loot = function(
 
 	local can_loot = evaluate.check_loot_preference(preference, loot)
 
-	if can_loot and not check_unmatached then
+	if can_loot then
 		can_loot = inventory.check_group_member(member, preference.list, char_dannet_delay, char_always_loot)
 	end
 
@@ -133,7 +124,7 @@ end
 evaluate.parse_preference_string = function(preference)
 	local parts = utils.split(preference, "|")
 
-	local setting = parts[1]
+	local setting = utils.title_case(tostring(parts[1]))
 	local quantity = tonumber(parts[2])
 	local list = parts[3] and utils.split(parts[3], ",") or nil
 
@@ -179,7 +170,7 @@ evaluate.get_member_char_settings = function(member, save_slots, dannet_delay, a
 		char_settings.settings.dannet_delay = dannet_delay
 	end
 
-	if char_settings.settings.save_slots == nil then
+	if char_settings.settings.always_loot == nil then
 		char_settings.settings.always_loot = always_loot
 	end
 
@@ -193,12 +184,12 @@ end
 evaluate.get_loot_preference = function(item, loot, char_settings, unmatched_item_rule)
 	local preference
 
-	if loot.items then
-		preference = evaluate.check_loot_items(item, loot.items)
+	if char_settings[loader.types.items] then
+		preference = evaluate.check_loot_items(item, char_settings[loader.types.items])
 	end
 
-	if preference == nil and char_settings[loader.types.items] then
-		preference = evaluate.check_loot_items(item, char_settings[loader.types.items])
+	if preference == nil and loot.items then
+		preference = evaluate.check_loot_items(item, loot.items)
 	end
 
 	if preference == nil and char_settings[loader.types.rules] then

@@ -73,10 +73,36 @@ settings.init_global_settings = function()
 	local global_settings = settings.load_global_settings()
 
 	local default_copy = settings.load_default_global_settings()
-	global_settings.categories = utils.table_concat(default_copy.categories, global_settings.categories)
-	global_settings.commands = utils.merge(default_copy.commands, global_settings.commands)
-	global_settings.settings = utils.merge(default_copy.settings, global_settings.settings)
-	global_settings.preferences = utils.merge(default_copy.preferences, global_settings.settings)
+
+	if global_settings.categories and type(global_settings.categories) == "table" then
+		global_settings.categories = utils.table_concat(default_copy.categories, global_settings.categories)
+	else
+		global_settings.categories = default_copy.categories
+	end
+
+	if global_settings.commands and type(global_settings.commands) == "table" then
+		global_settings.commands = utils.merge(default_copy.commands, global_settings.commands)
+	else
+		global_settings.commands = default_copy.commands
+	end
+
+	if global_settings.preferences and type(global_settings.preferences) == "table" then
+		global_settings.preferences = utils.merge(default_copy.preferences, global_settings.preferences)
+	else
+		global_settings.preferences = default_copy.preferences
+	end
+
+	if global_settings.settings and type(global_settings.settings) == "table" then
+		global_settings.settings = utils.merge(default_copy.settings, global_settings.settings)
+	else
+		global_settings.settings = default_copy.settings
+	end
+
+	if global_settings.subcommands and type(global_settings.subcommands) == "table" then
+		global_settings.subcommands = utils.merge(default_copy.subcommands, global_settings.subcommands)
+	else
+		global_settings.subcommands = default_copy.subcommands
+	end
 
 	return global_settings
 end
@@ -148,6 +174,7 @@ settings.reload_settings = function(global_settings, char_settings)
 	new_global_settings.conditions = utils.merge(new_global_settings.conditions, global_settings.conditions)
 	new_global_settings.commands = utils.merge(new_global_settings.commands, global_settings.commands)
 	new_global_settings.rules = utils.merge(new_global_settings.rules, global_settings.rules)
+	new_global_settings.subcommands = utils.merge(new_global_settings.subcommands, global_settings.subcommands)
 
 	return new_global_settings, new_char_settings
 end

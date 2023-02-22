@@ -72,7 +72,6 @@ local function can_deposit_item(item, global_settings, char_settings)
 			item,
 			global_settings,
 			char_settings,
-			true,
 			global_settings.settings.unmatched_item_rule
 		)
 
@@ -95,20 +94,13 @@ local function promote_item()
 
 	-- select item to promote
 	mq.cmdf("/nomodkey /notify GuildBankWnd GBANK_DepositList listselect 1")
-	mq.delay(250)
 
-	-- wait for the promote button
-	while not is_promote_button_enabled() do
-		mq.delay(250)
-	end
+	helpers.not_delay_and_wait(is_promote_button_enabled, 250)
 
 	-- promote item
 	mq.cmdf("/nomodkey /notify GuildBankWnd GBANK_PromoteButton leftmouseup")
-	mq.delay(1000)
 
-	while is_promote_button_enabled() do
-		mq.delay(250)
-	end
+	helpers.delay_and_wait(is_promote_button_enabled, 250)
 end
 
 local function promote_items()
@@ -142,11 +134,8 @@ local function change_permissions()
 			Write.Info("Changing \a-t%s\ax from \ao%s\ax to \atPublic\ax", item_name, permission)
 
 			mq.cmdf("/notify GuildBankWnd GBANK_ItemList listselect %d", i)
-			mq.delay(250)
 
-			while not is_permission_combo_enabled() do
-				mq.delay(250)
-			end
+			helpers.not_delay_and_wait(is_permission_combo_enabled, 250)
 
 			mq.cmdf("/nomodkey /notify GuildBankWnd GBANK_PermissionCombo listselect 4")
 			mq.delay(1000)
@@ -163,22 +152,16 @@ local function deposit_item(item, global_settings, char_settings)
 		else
 			mq.cmdf("/shift /itemnotify %s leftmouseup", item.ItemSlot())
 		end
-		mq.delay(250)
 
-		while not is_bank_deposit_button_enabled() do
-			mq.delay(250)
-		end
+		helpers.not_delay_and_wait(is_bank_deposit_button_enabled, 250)
 
 		-- deposit item if the cursor matches what we expect
 		if mq.TLO.Cursor.ID() == item.ID() then
 			Write.Info("Depositing \a-t%s\ax", item.Name())
 
 			mq.cmdf("/nomodkey /notify GuildBankWnd GBANK_DepositButton leftmouseup")
-			mq.delay(1000)
 
-			while is_bank_deposit_button_enabled() do
-				mq.delay(250)
-			end
+			helpers.delay_and_wait(is_bank_deposit_button_enabled, 250)
 
 			if get_free_bank_count() > 0 then
 				promote_item()

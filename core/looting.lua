@@ -75,35 +75,19 @@ looting.get_valid_member = function(tlo, index)
 	return member
 end
 
-looting.get_member_can_loot = function(
-	item,
-	loot,
-	save_slots,
-	dannet_delay,
-	always_loot,
-	check_unmatched,
-	unmatched_item_rule
-)
+looting.get_member_can_loot = function(item, loot, save_slots, dannet_delay, always_loot, unmatched_item_rule)
 	local group_or_raid_tlo = looting.get_group_or_raid_tlo()
 
 	local can_loot, check_rematch, member, preference = false, true, nil, nil
 
 	local count = looting.get_member_count(group_or_raid_tlo)
 
-	for i = 0, (count - 1) do
+	for i = 0, count do
 		member = looting.get_valid_member(group_or_raid_tlo, i)
 
 		if member then
-			can_loot, check_rematch, preference = evaluate.check_can_loot(
-				member,
-				item,
-				loot,
-				save_slots,
-				dannet_delay,
-				always_loot,
-				check_unmatched,
-				unmatched_item_rule
-			)
+			can_loot, check_rematch, preference =
+				evaluate.check_can_loot(member, item, loot, save_slots, dannet_delay, always_loot, unmatched_item_rule)
 
 			if can_loot then
 				break
@@ -138,7 +122,6 @@ looting.handle_master_looting = function(global_settings)
 		global_settings.settings.save_slots,
 		global_settings.settings.dannet_delay,
 		false,
-		false,
 		global_settings.settings.unmatched_item_rule
 	)
 
@@ -152,7 +135,6 @@ looting.handle_master_looting = function(global_settings)
 			global_settings.settings.save_slots,
 			global_settings.settings.dannet_delay,
 			global_settings.settings.always_loot,
-			true,
 			global_settings.settings.unmatched_item_rule
 		)
 	end
@@ -188,8 +170,9 @@ looting.handle_master_looting = function(global_settings)
 
 	if item_name == mq.TLO.AdvLoot[loot_list_tlo](1).Name() then
 		Write.Info("Giving \a-t%s\ax to \ao%s\ax", item_name, member)
-		mq.delay(global_settings.settings.distribute_delay)
 		looting.give_item(member)
+
+		mq.delay(global_settings.settings.distribute_delay)
 	end
 end
 
@@ -198,11 +181,13 @@ looting.handle_solo_looting = function(global_settings)
 		return
 	end
 
-	if mq.TLO.AdvLoot.LootInProgress() then
+	local loot_count_tlo, loot_list_tlo = looting.get_loot_tlos()
+
+	if not looting.can_i_loot(loot_count_tlo) then
 		return
 	end
 
-	local item = mq.TLO.AdvLoot.PList(1)
+	local item = mq.TLO.AdvLoot[loot_list_tlo](1)
 	local item_name = item.Name()
 
 	if item == "NULL" or not item_name then
@@ -217,7 +202,7 @@ looting.handle_solo_looting = function(global_settings)
 		global_settings.settings.save_slots,
 		global_settings.settings.dannet_delay,
 		global_settings.settings.always_loot,
-		false
+		global_settings.settings.unmatched_item_rule
 	)
 
 	if not preference then
@@ -251,8 +236,9 @@ looting.handle_solo_looting = function(global_settings)
 
 	if item_name == mq.TLO.AdvLoot.PList(1).Name() then
 		Write.Info("Looting \a-t%s\ax", item_name)
-		mq.delay(global_settings.settings.distribute_delay)
 		looting.loot_item()
+
+		mq.delay(global_settings.settings.distribute_delay)
 
 		inventory.check_lore_equip_prompt()
 	end
@@ -260,6 +246,10 @@ end
 
 looting.handle_personal_loot = function()
 	if looting.is_solo_looter() then
+		return
+	end
+
+	if not looting.can_i_loot("PCount") then
 		return
 	end
 

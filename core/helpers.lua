@@ -3,6 +3,26 @@ local mq = require("mq")
 
 local helpers = {}
 
+helpers.delay_and_wait = function(func, delay)
+	mq.delay(1000)
+
+	while func() do
+		mq.delay(250)
+	end
+
+	mq.delay(delay)
+end
+
+helpers.not_delay_and_wait = function(func, delay)
+	mq.delay(1000)
+
+	while not func() do
+		mq.delay(250)
+	end
+
+	mq.delay(delay)
+end
+
 helpers.is_valid_container = function(item)
 	return item.Container() and item.Items() and item.Items() > 0
 end
@@ -21,7 +41,7 @@ end
 helpers.open_npc_window = function(npc_class)
 	local npc = mq.TLO.NearestSpawn(('class "%s"'):format(npc_class))
 
-	if npc_class == "Merchant" and npc.CleanName() == "Parcel Delivery Liason" then
+	if npc_class == "Merchant" and npc.CleanName() == "Parcel Delivery Liaison" then
 		npc = mq.TLO.NearestSpawn(2, ('class "%s"'):format(npc_class))
 	end
 

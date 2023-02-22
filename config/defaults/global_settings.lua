@@ -159,6 +159,13 @@ do
 				help = "List all available %s",
 				category = "Configuration",
 			},
+			Rename = {
+				args = "<name> <new_name>",
+				name = "Rename",
+				trigger = "rename",
+				help = "Renames a %s with the given name",
+				category = "Configuration",
+			},
 			Set = {
 				args = "<setting> <value>",
 				name = "Set",
