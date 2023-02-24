@@ -18,7 +18,13 @@ command.valid_subcommands = {
 }
 
 local function action(global_settings, char_settings, args)
-	configuration.action(command, global_settings, char_settings, configuration.types.character.name, args)
+	configuration.action(
+		command.valid_subcommands,
+		global_settings,
+		char_settings,
+		configuration.types.character.name,
+		args
+	)
 end
 
 return { action_func = action }

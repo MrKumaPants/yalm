@@ -68,7 +68,7 @@ looting.get_valid_member = function(tlo, index)
 		member = mq.TLO[tlo].Member(index)
 	end
 
-	if member.ID() == 0 or member.Spawn.Dead() then
+	if member.ID() == 0 or member.Dead() then
 		return nil
 	end
 
@@ -112,7 +112,7 @@ looting.handle_master_looting = function(global_settings)
 	local item = mq.TLO.AdvLoot[loot_list_tlo](1)
 	local item_name = item.Name()
 
-	if item == "NULL" or not item_name then
+	if not item_name then
 		return
 	end
 

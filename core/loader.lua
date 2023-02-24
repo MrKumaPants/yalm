@@ -28,7 +28,11 @@ loader.unload_package = function(name, loot_type)
 end
 
 loader.should_load = function(loot_type, char_settings)
-	if loot_type == loader.types.commands or loot_type == loader.types.conditions then
+	if
+		loot_type == loader.types.commands
+		or loot_type == loader.types.conditions
+		or loot_type == loader.types.subcommands
+	then
 		return true
 	elseif loot_type == loader.types.rules then
 		for i in ipairs(char_settings[loot_type]) do
@@ -54,7 +58,7 @@ loader.load = function(rule, loot_type, reload)
 		Write.Warn("%s registration failed: %s", loot_type, rule.name)
 		Write.Warn('To get more error output, you could try: "/lua run yalm/config/%s/%s"', loot_type, rule.name)
 	else
-		if loot_type == loader.types.commands then
+		if loot_type == loader.types.commands or loot_type == loader.types.subcommands then
 			rule.func = result
 
 			if type(rule.func) == "function" then

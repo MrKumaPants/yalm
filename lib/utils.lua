@@ -41,14 +41,14 @@ utils.dir_exists = function(path)
 	return false
 end
 
-utils.make_dir = function(base_dir, path)
-	if not utils.dir_exists(("%s/%s"):format(base_dir, path)) then
+utils.make_dir = function(base_dir, dir)
+	if not utils.dir_exists(("%s/%s"):format(base_dir, dir)) then
 		local success, error_msg = lfs.chdir(base_dir)
 		if not success then
 			Write.Error("Could not change to config directory: %s", error_msg)
 			return false
 		end
-		success, error_msg = lfs.mkdir("YALM")
+		success, error_msg = lfs.mkdir(dir)
 		if not success then
 			Write.Error("Could not create config directory: %s", error_msg)
 			return false
@@ -122,6 +122,16 @@ utils.find = function(list, value)
 			return i
 		end
 	end
+	return nil
+end
+
+utils.find_by_key = function(list, key, value)
+	for _, entry in pairs(list) do
+		if entry[key] == value then
+			return entry
+		end
+	end
+
 	return nil
 end
 

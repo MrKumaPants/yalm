@@ -66,11 +66,17 @@ command.valid_subcommands = {
 	["remove"] = {
 		func = command.remove,
 	},
-	["list"] = {},
+	"list",
 }
 
 local function action(global_settings, char_settings, args)
-	configuration.action(command, global_settings, char_settings, configuration.types.category.name, args)
+	configuration.action(
+		command.valid_subcommands,
+		global_settings,
+		char_settings,
+		configuration.types.category.name,
+		args
+	)
 end
 
 return { action_func = action }

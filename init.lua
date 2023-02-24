@@ -28,13 +28,15 @@ require("yalm.lib.database")
 
 Database.database = assert(Database.OpenDatabase())
 
+local configuration = require("yalm.config.configuration")
+local settings = require("yalm.config.settings")
+
 local looting = require("yalm.core.looting")
 local loader = require("yalm.core.loader")
-local settings = require("yalm.config.settings")
 
 local utils = require("yalm.lib.utils")
 
-local version = "0.6.16"
+local version = "0.6.17"
 
 -- application state
 local state = {
@@ -51,56 +53,13 @@ local state = {
 
 local global_settings, char_settings
 
-local function find_loot_command(command)
-	for _, loot_command in pairs(global_settings.commands) do
-		if loot_command.trigger == command then
-			return loot_command
-		end
-	end
-
-	return nil
-end
-
-local function print_command_help()
-	local category_map = {}
-	for _, command in pairs(global_settings.commands) do
-		local category = command.category or "Uncategorized"
-		if not category_map[category] then
-			category_map[category] = {}
-		end
-		table.insert(category_map[category], command)
-	end
-
-	for category, commands in pairs(category_map) do
-		Write.Help("\ax%s Commands Available:", category)
-		table.sort(commands, function(left, right)
-			return left.name < right.name
-		end)
-		for i in ipairs(commands) do
-			local command = commands[i]
-			if command.loaded then
-				local message = ("\t  \ay/yalm %s"):format(command.trigger)
-				if command.args then
-					message = ("%s %s\ax"):format(message, command.args)
-				else
-					message = ("%s\ax"):format(message)
-				end
-				if command.help then
-					message = ("%s -- %s"):format(message, command.help)
-				end
-				Write.Help(message)
-			end
-		end
-	end
-end
-
 local function print_help()
 	Write.Help("\at[\ax\ayYet Another Loot Manager v%s\ax\at]\ax", version)
 	Write.Help("\axCommands Available:")
 	Write.Help("\t  \ay/yalm help\ax -- Display this help output")
 	Write.Help("\t  \ay/yalm reload\ax -- Reload settings (Currently just restarts the script)")
 
-	print_command_help()
+	configuration.print_type_help(global_settings, loader.types.commands)
 end
 
 local function cmd_handler(...)
@@ -112,7 +71,7 @@ local function cmd_handler(...)
 	end
 
 	local command = args[1]
-	local loot_command = find_loot_command(command)
+	local loot_command = utils.find_by_key(global_settings.commands, "trigger", command)
 
 	if command == "help" then
 		print_help()

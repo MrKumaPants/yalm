@@ -2,6 +2,7 @@ do
 	local _ = {
 		categories = {
 			"Configuration",
+			"Helper",
 			"Item",
 		},
 		commands = {
@@ -131,47 +132,47 @@ do
 				name = "Create",
 				trigger = "create",
 				help = "Creates a new %s with the given name",
-				category = "Configuration",
+				category = "Helper",
 			},
 			Delete = {
 				args = "<name>",
 				name = "Delete",
 				trigger = "delete",
 				help = "Deletes a %s with the given name",
-				category = "Configuration",
+				category = "Helper",
 			},
 			Edit = {
 				args = "<name>",
 				name = "Edit",
 				trigger = "edit",
 				help = "Opens a %s with the given name in your preferred editor",
-				category = "Configuration",
+				category = "Helper",
 			},
 			Help = {
 				name = "Help",
 				trigger = "help",
 				help = "Display this help output",
-				category = "Configuration",
+				category = "Helper",
 			},
 			List = {
 				name = "List",
 				trigger = "list",
 				help = "List all available %s",
-				category = "Configuration",
+				category = "Helper",
 			},
 			Rename = {
 				args = "<name> <new_name>",
 				name = "Rename",
 				trigger = "rename",
 				help = "Renames a %s with the given name",
-				category = "Configuration",
+				category = "Helper",
 			},
 			Set = {
 				args = "<setting> <value>",
 				name = "Set",
 				trigger = "set",
 				help = "Updates setting to the given value",
-				category = "Configuration",
+				category = "Helper",
 			},
 		},
 	}

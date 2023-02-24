@@ -39,18 +39,19 @@ local function sell_item(item, global_settings, char_settings)
 			mq.cmdf("/shift /itemnotify %s leftmouseup", item.ItemSlot())
 		end
 
-		mq.delay(500)
+		helpers.not_delay_and_wait(function()
+			return mq.TLO.Merchant.SelectedItem.ID() == item.ID()
+		end, 250)
 
 		-- sell item if the selected item in the merchant window matches
 		if mq.TLO.Merchant.SelectedItem.ID() == item.ID() then
 			if not mq.TLO.Window("MerchantWnd/MW_SelectedPriceLabel").Text():find("^0c") then
 				Write.Info("Selling \a-t%s\ax", item.Name())
 				mq.TLO.Merchant.Sell(stack)
-				mq.delay(1000)
 
-				while mq.TLO.Merchant.SelectedItem.ID() do
-					mq.delay(150)
-				end
+				helpers.delay_and_wait(function()
+					return mq.TLO.Merchant.SelectedItem.ID() == item.ID()
+				end, 250)
 			end
 		else
 			Write.Warn(

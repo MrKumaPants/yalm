@@ -43,6 +43,9 @@ local function action(global_settings, char_settings, args)
 
 	if item_name and preference then
 		global_or_character = args[#args]
+		if not global_or_character and global_or_character == preference then
+			global_or_character = "all"
+		end
 		if global_or_character ~= "all" and global_or_character ~= "me" then
 			Write.Error("Invalid scope for \a-t%s\ax", global_or_character)
 			return

@@ -44,7 +44,6 @@ local function action(global_settings, char_settings, args)
 		global_settings.settings.save_slots,
 		global_settings.settings.dannet_delay,
 		false,
-		false,
 		global_settings.settings.unmatched_item_rule
 	)
 
@@ -58,7 +57,6 @@ local function action(global_settings, char_settings, args)
 			global_settings.settings.save_slots,
 			global_settings.settings.dannet_delay,
 			global_settings.settings.always_loot,
-			true,
 			global_settings.settings.unmatched_item_rule
 		)
 	end

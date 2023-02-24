@@ -7,7 +7,7 @@ local helpers = require("yalm.core.helpers")
 local function get_buy_preference(item, global_settings, char_settings)
 	if item.Name() then
 		local member = mq.TLO.Me
-		local can_loot, preference = evaluate.check_can_loot(
+		local can_loot, _, preference = evaluate.check_can_loot(
 			member,
 			item,
 			global_settings,
@@ -53,9 +53,14 @@ local function buy_item(item, global_settings, char_settings)
 				mq.TLO.Merchant.SelectItem(item.Name())
 				mq.delay(250)
 
-				Write.Info("Buying \ao%s\ax of \a-t%s\a-x", buy_count, item.Name())
-				mq.TLO.Merchant.Buy(buy_count)
-				mq.delay(250)
+				if mq.TLO.Merchant.SelectedItem.BuyPrice() <= mq.TLO.Me.Cash() then
+					Write.Info("Buying \ao%s\ax of \a-t%s\ax", buy_count, item.Name())
+					mq.TLO.Merchant.Buy(buy_count)
+					mq.delay(250)
+				else
+					Write.Info("You cannot afford to buy any more \a-t%s\ax", item.Name())
+					buy_count = 0
+				end
 			end
 		until buy_count == 0
 	end
