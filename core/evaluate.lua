@@ -8,6 +8,8 @@ local Item = require("yalm.definitions.Item")
 local database = require("yalm.lib.database")
 local utils = require("yalm.lib.utils")
 
+local inspect = require("yalm.lib.inspect")
+
 local evaluate = {}
 
 evaluate.check_can_loot = function(member, item, loot, save_slots, dannet_delay, always_loot, unmatched_item_rule)
@@ -48,31 +50,26 @@ evaluate.check_can_loot = function(member, item, loot, save_slots, dannet_delay,
 	return can_loot, check_rematch, preference
 end
 
-evaluate.check_loot_conditions = function(item, loot_conditions, set_conditions)
+evaluate.check_loot_conditions = function(item, loot_functions, loot_conditions, set_conditions)
 	local preference
 
 	for i in ipairs(set_conditions) do
-		local condition = set_conditions[i]
+		local func, condition = nil, set_conditions[i]
 		if loot_conditions[condition.name] and loot_conditions[condition.name].loaded then
+			func = loot_conditions[condition.name].func.condition_func
+		elseif loot_functions[condition.name] and loot_functions[condition.name].loaded then
+			func = loot_functions[condition.name].func.helper_func
+		end
+
+		if func then
 			local condition_item = item
 			-- this is an advlootitem
-			if condition_item.Index() and item.ID() then
+			if item.Index and item.ID() then
 				condition_item = Item:new(nil, database.QueryDatabaseForItemId(item.ID()))
 			end
-			local success, result = pcall(loot_conditions[condition.name].func.condition_func, condition_item)
+			local success, result = pcall(func, condition_item)
 			if success and result then
-				preference = evaluate.convert_rule_preference(condition_item, condition)
-				break
-			end
-		elseif condition.func and condition.func.condition_func then
-			local condition_item = item
-			-- this is an advlootitem
-			if condition_item.Index() and item.ID() then
-				condition_item = Item:new(nil, database.QueryDatabaseForItemId(item.ID()))
-			end
-			local result = condition.func.condition_func(condition_item)
-			if result then
-				preference = evaluate.convert_rule_preference(condition_item, condition)
+				preference = evaluate.convert_rule_preference(condition_item, loot_functions, condition)
 				break
 			end
 		end
@@ -81,11 +78,11 @@ evaluate.check_loot_conditions = function(item, loot_conditions, set_conditions)
 	return preference
 end
 
-evaluate.check_loot_items = function(item, loot_items)
+evaluate.check_loot_items = function(item, loot_functions, loot_items)
 	local preference
 
 	if loot_items[item.Name()] then
-		preference = evaluate.convert_rule_preference(item, loot_items[item.Name()])
+		preference = evaluate.convert_rule_preference(item, loot_functions, loot_items[item.Name()])
 	end
 
 	return preference
@@ -107,18 +104,19 @@ evaluate.check_loot_preference = function(preference, loot)
 	return true
 end
 
-evaluate.check_loot_rules = function(item, loot_conditions, loot_rules, char_rules)
+evaluate.check_loot_rules = function(item, loot_functions, loot_conditions, loot_rules, char_rules)
 	local preference
 
 	for i in ipairs(char_rules) do
 		local rule = char_rules[i]
-		if rule.enabled and loot_rules[rule.name].loaded then
+		if rule.enabled then
 			if loot_rules[rule.name][loader.types.items] then
-				preference = evaluate.check_loot_items(item, loot_rules[rule.name][loader.types.items])
+				preference = evaluate.check_loot_items(item, loot_functions, loot_rules[rule.name][loader.types.items])
 			end
 			if preference == nil and loot_rules[rule.name][loader.types.conditions] then
 				preference = evaluate.check_loot_conditions(
 					item,
+					loot_functions,
 					loot_conditions,
 					loot_rules[rule.name][loader.types.conditions]
 				)
@@ -146,23 +144,26 @@ evaluate.parse_preference_string = function(preference)
 	}
 end
 
-evaluate.convert_rule_preference = function(item, preference)
+evaluate.convert_rule_preference = function(item, functions, preference)
 	local converted = utils.shallow_copy(preference)
 
 	if type(preference) == "string" then
 		return evaluate.parse_preference_string(preference)
 	end
 
-	if type(preference["setting"]) == "function" then
-		converted["setting"] = preference["setting"](item)
+	local setting_function = functions[preference["setting"]]
+	if setting_function and setting_function.loaded then
+		converted["setting"] = setting_function.func.helper_func(item)
 	end
 
-	if type(preference["quantity"]) == "function" then
-		converted["quantity"] = preference["quantity"](item)
+	local quantity_function = functions[preference["quantity"]]
+	if quantity_function and quantity_function.loaded then
+		converted["quantity"] = quantity_function.func.helper_func(item)
 	end
 
-	if type(preference["list"]) == "function" then
-		converted["list"] = preference["list"](item)
+	local list_function = functions[preference["list"]]
+	if list_function and list_function.loaded then
+		converted["list"] = list_function.func.helper_func(item)
 	end
 
 	return converted
@@ -196,15 +197,21 @@ evaluate.get_loot_preference = function(item, loot, char_settings, unmatched_ite
 	local preference
 
 	if char_settings[loader.types.items] then
-		preference = evaluate.check_loot_items(item, char_settings[loader.types.items])
+		preference = evaluate.check_loot_items(item, loot.functions, char_settings[loader.types.items])
 	end
 
 	if preference == nil and loot.items then
-		preference = evaluate.check_loot_items(item, loot.items)
+		preference = evaluate.check_loot_items(item, loot.functions, loot.items)
 	end
 
 	if preference == nil and char_settings[loader.types.rules] then
-		preference = evaluate.check_loot_rules(item, loot.conditions, loot.rules, char_settings[loader.types.rules])
+		preference = evaluate.check_loot_rules(
+			item,
+			loot.functions,
+			loot.conditions,
+			loot.rules,
+			char_settings[loader.types.rules]
+		)
 	end
 
 	if preference == nil and unmatched_item_rule then

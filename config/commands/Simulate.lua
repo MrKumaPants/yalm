@@ -12,11 +12,6 @@ local utils = require("yalm.lib.utils")
 local function action(global_settings, char_settings, args)
 	local item, item_name = nil, nil
 
-	if not looting.am_i_master_looter() then
-		Write.Warn("You are not the master looter")
-		return
-	end
-
 	if mq.TLO.Cursor.ID() then
 		item_name = mq.TLO.Cursor.Name()
 		item = mq.TLO.Cursor

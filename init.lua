@@ -36,7 +36,7 @@ local loader = require("yalm.core.loader")
 
 local utils = require("yalm.lib.utils")
 
-local version = "0.6.19"
+local version = "0.8.1"
 
 -- application state
 local state = {
@@ -114,10 +114,10 @@ local function main()
 		if not mq.TLO.Me.Dead() then
 			global_settings, char_settings = settings.reload_settings(global_settings, char_settings)
 
-			loader.manage(global_settings.commands, loader.types.commands, char_settings)
-			loader.manage(global_settings.conditions, loader.types.conditions, char_settings)
-			loader.manage(global_settings.rules, loader.types.rules, char_settings)
-			loader.manage(global_settings.subcommands, loader.types.subcommands, char_settings)
+			loader.manage(global_settings.commands, loader.types.commands)
+			loader.manage(global_settings.conditions, loader.types.conditions)
+			loader.manage(global_settings.functions, loader.types.functions)
+			loader.manage(global_settings.subcommands, loader.types.subcommands)
 
 			looting.handle_master_looting(global_settings)
 			looting.handle_solo_looting(global_settings)

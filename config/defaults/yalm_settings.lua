@@ -3,6 +3,7 @@ do
 		categories = {},
 		commands = {},
 		conditions = {},
+		functions = {},
 		items = {},
 		preferences = {},
 		rules = {},

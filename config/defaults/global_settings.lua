@@ -1,6 +1,7 @@
 do
 	local _ = {
 		categories = {
+			"Class",
 			"Configuration",
 			"Helper",
 			"Item",
@@ -88,6 +89,14 @@ do
 			},
 		},
 		conditions = {},
+		functions = {
+			GetClassList = {
+				name = "GetClassList",
+			},
+			GetEquipmentQuantity = {
+				name = "GetEquipmentQuantity",
+			},
+		},
 		items = {},
 		preferences = {
 			Buy = {
@@ -114,7 +123,106 @@ do
 				name = "Tribute",
 			},
 		},
-		rules = {},
+		rules = {
+			BER = {
+				category = "Class",
+				name = "BER",
+				conditions = {},
+				items = {},
+			},
+			BRD = {
+				category = "Class",
+				name = "BRD",
+				conditions = {},
+				items = {},
+			},
+			BST = {
+				category = "Class",
+				name = "BST",
+				conditions = {},
+				items = {},
+			},
+			CLR = {
+				category = "Class",
+				name = "CLR",
+				conditions = {},
+				items = {},
+			},
+			DRU = {
+				category = "Class",
+				name = "DRU",
+				conditions = {},
+				items = {
+					["Fire Beetle Eye"] = {
+						setting = "Buy",
+						quantity = 10,
+					},
+				},
+			},
+			MNK = {
+				category = "Class",
+				name = "MNK",
+				conditions = {},
+				items = {},
+			},
+			NEC = {
+				category = "Class",
+				name = "NEC",
+				conditions = {},
+				items = {},
+			},
+			PAL = {
+				category = "Class",
+				name = "PAL",
+				conditions = {},
+				items = {},
+			},
+			RNG = {
+				category = "Class",
+				name = "RNG",
+				conditions = {},
+				items = {
+					Arrow = {
+						setting = "Buy",
+						quantity = 500,
+					},
+					["Fire Beetle Eye"] = {
+						setting = "Buy",
+						quantity = 10,
+					},
+				},
+			},
+			ROG = {
+				category = "Class",
+				name = "ROG",
+				conditions = {},
+				items = {},
+			},
+			SHD = {
+				category = "Class",
+				name = "SHD",
+				conditions = {},
+				items = {},
+			},
+			SHM = {
+				category = "Class",
+				name = "SHM",
+				conditions = {},
+				items = {},
+			},
+			WAR = {
+				category = "Class",
+				name = "WAR",
+				conditions = {},
+				items = {},
+			},
+			WIZ = {
+				category = "Class",
+				name = "WIZ",
+				conditions = {},
+				items = {},
+			},
+		},
 		settings = {
 			always_loot = true,
 			distribute_delay = "1s",

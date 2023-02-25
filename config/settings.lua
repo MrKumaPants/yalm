@@ -86,6 +86,12 @@ settings.init_global_settings = function()
 		global_settings.commands = default_copy.commands
 	end
 
+	if global_settings.functions and type(global_settings.functions) == "table" then
+		global_settings.functions = utils.merge(default_copy.functions, global_settings.functions)
+	else
+		global_settings.functions = default_copy.functions
+	end
+
 	if global_settings.preferences and type(global_settings.preferences) == "table" then
 		global_settings.preferences = utils.merge(default_copy.preferences, global_settings.preferences)
 	else
@@ -173,6 +179,7 @@ settings.reload_settings = function(global_settings, char_settings)
 
 	new_global_settings.conditions = utils.merge(new_global_settings.conditions, global_settings.conditions)
 	new_global_settings.commands = utils.merge(new_global_settings.commands, global_settings.commands)
+	new_global_settings.functions = utils.merge(new_global_settings.functions, global_settings.functions)
 	new_global_settings.rules = utils.merge(new_global_settings.rules, global_settings.rules)
 	new_global_settings.subcommands = utils.merge(new_global_settings.subcommands, global_settings.subcommands)
 
@@ -189,7 +196,7 @@ settings.save_global_settings = function(global_settings)
 		metatostring = false,
 		nocode = true,
 		nohuge = true,
-		sortkeys = false,
+		sortkeys = true,
 		sparse = true,
 	})
 	utils.write_file(("%s/YALM.lua"):format(mq.configDir), content)
@@ -205,7 +212,7 @@ settings.save_char_settings = function(char_settings)
 		metatostring = false,
 		nocode = true,
 		nohuge = true,
-		sortkeys = false,
+		sortkeys = true,
 		sparse = true,
 	})
 	utils.write_file(

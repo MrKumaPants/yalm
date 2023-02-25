@@ -8,6 +8,7 @@ local loader = {
 		categories = "categories",
 		commands = "commands",
 		conditions = "conditions",
+		functions = "functions",
 		items = "items",
 		preferences = "preferences",
 		rules = "rules",
@@ -27,20 +28,14 @@ loader.unload_package = function(name, loot_type)
 	package.loaded[loader.packagename(name, loot_type)] = nil
 end
 
-loader.should_load = function(loot_type, char_settings)
+loader.should_load = function(loot_type)
 	if
 		loot_type == loader.types.commands
 		or loot_type == loader.types.conditions
+		or loot_type == loader.types.functions
 		or loot_type == loader.types.subcommands
 	then
 		return true
-	elseif loot_type == loader.types.rules then
-		for i in ipairs(char_settings[loot_type]) do
-			local rule = char_settings[loot_type][i]
-			if rule.name == rule.name and rule.enabled then
-				return true
-			end
-		end
 	end
 
 	return false
@@ -86,9 +81,18 @@ loader.load = function(rule, loot_type, reload)
 				)
 				return
 			end
-		elseif loot_type == loader.types.rules then
-			rule.conditions = result.conditions
-			rule.items = result.items
+		elseif loot_type == loader.types.functions then
+			rule.func = result
+
+			if type(rule.func) == "function" then
+				local tmp_func = rule.func
+				rule.func = { helper_func = tmp_func }
+			elseif type(rule.func) ~= "table" then
+				result = nil
+				rule.failed = true
+				Write.Warn("%s registration failed: %s, helper function not correctly defined", loot_type, rule.name)
+				return
+			end
 		end
 		Write.Info("Registering %s: \ao%s\ax", loot_type, rule.name)
 		rule.loaded = true
@@ -115,9 +119,9 @@ loader.has_modified = function(rule, loot_type)
 	return current_timestamp > old_timestamp
 end
 
-loader.manage = function(rule_list, loot_type, char_settings)
+loader.manage = function(rule_list, loot_type)
 	for _, rule in pairs(rule_list) do
-		local load_event = loader.should_load(loot_type, char_settings)
+		local load_event = loader.should_load(loot_type)
 		local has_modified = loader.has_modified(rule, loot_type)
 
 		if (has_modified or not rule.loaded) and not rule.failed and load_event then
