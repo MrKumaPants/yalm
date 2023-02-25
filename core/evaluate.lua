@@ -56,11 +56,22 @@ evaluate.check_loot_conditions = function(item, loot_conditions, set_conditions)
 		if loot_conditions[condition.name] and loot_conditions[condition.name].loaded then
 			local condition_item = item
 			-- this is an advlootitem
-			if condition_item.Index and item.ID() then
+			if condition_item.Index() and item.ID() then
 				condition_item = Item:new(nil, database.QueryDatabaseForItemId(item.ID()))
 			end
 			local success, result = pcall(loot_conditions[condition.name].func.condition_func, condition_item)
 			if success and result then
+				preference = evaluate.convert_rule_preference(condition_item, condition)
+				break
+			end
+		elseif condition.func and condition.func.condition_func then
+			local condition_item = item
+			-- this is an advlootitem
+			if condition_item.Index() and item.ID() then
+				condition_item = Item:new(nil, database.QueryDatabaseForItemId(item.ID()))
+			end
+			local result = condition.func.condition_func(condition_item)
+			if result then
 				preference = evaluate.convert_rule_preference(condition_item, condition)
 				break
 			end

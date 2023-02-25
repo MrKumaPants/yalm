@@ -36,7 +36,7 @@ local loader = require("yalm.core.loader")
 
 local utils = require("yalm.lib.utils")
 
-local version = "0.6.17"
+local version = "0.6.19"
 
 -- application state
 local state = {

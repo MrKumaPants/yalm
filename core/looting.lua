@@ -195,7 +195,7 @@ looting.handle_solo_looting = function(global_settings)
 	end
 
 	local member = mq.TLO.Me
-	local can_loot, preference = evaluate.check_can_loot(
+	local can_loot, _, preference = evaluate.check_can_loot(
 		member,
 		item,
 		global_settings,
@@ -205,7 +205,7 @@ looting.handle_solo_looting = function(global_settings)
 		global_settings.settings.unmatched_item_rule
 	)
 
-	if not preference then
+	if not can_loot or not preference then
 		Write.Warn("No loot preference found for \a-t%s\ax", item_name)
 		mq.delay(global_settings.settings.unmatched_item_delay)
 		looting.leave_item()
