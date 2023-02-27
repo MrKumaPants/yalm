@@ -8,8 +8,6 @@ local Item = require("yalm.definitions.Item")
 local database = require("yalm.lib.database")
 local utils = require("yalm.lib.utils")
 
-local inspect = require("yalm.lib.inspect")
-
 local evaluate = {}
 
 evaluate.check_can_loot = function(member, item, loot, save_slots, dannet_delay, always_loot, unmatched_item_rule)
@@ -109,7 +107,7 @@ evaluate.check_loot_rules = function(item, loot_functions, loot_conditions, loot
 
 	for i in ipairs(char_rules) do
 		local rule = char_rules[i]
-		if rule.enabled then
+		if loot_rules[rule.name] and rule.enabled then
 			if loot_rules[rule.name][loader.types.items] then
 				preference = evaluate.check_loot_items(item, loot_functions, loot_rules[rule.name][loader.types.items])
 			end

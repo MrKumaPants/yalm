@@ -79,7 +79,7 @@ local function s(t, opts)
 	if opts.fixradix and (".1f"):format(1.2) ~= "1.2" then
 		local origsafestr = safestr
 		safestr = function(s)
-			return type(s) == "number" and (nohuge and snum[tostring(s)] or numformat:format(s):gsub(",", "."))
+			return type(s) == "number" and (not huge and snum[tostring(s)] or numformat:format(s):gsub(",", "."))
 				or origsafestr(s)
 		end
 	end

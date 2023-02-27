@@ -7,6 +7,12 @@ do
 			"Item",
 		},
 		commands = {
+			Bank = {
+				name = "Bank",
+				trigger = "bank",
+				help = "Deposits designated items into the personal bank",
+				category = "Item",
+			},
 			Buy = {
 				name = "Buy",
 				trigger = "buy",
@@ -99,6 +105,9 @@ do
 		},
 		items = {},
 		preferences = {
+			Bank = {
+				name = "Bank",
+			},
 			Buy = {
 				name = "Buy",
 			},
@@ -128,7 +137,38 @@ do
 				category = "Class",
 				name = "BER",
 				conditions = {},
-				items = {},
+				items = {
+					["Axe Components"] = {
+						quantity = 100,
+						setting = "Buy",
+					},
+					["Axe of the Annihilator"] = {
+						setting = "Keep",
+					},
+					["Balanced Axe Components"] = {
+						quantity = 100,
+						setting = "Buy",
+					},
+					["Basic Axe Components"] = {
+						quantity = 100,
+						setting = "Buy",
+					},
+					["Crafted Axe Components"] = {
+						quantity = 100,
+						setting = "Buy",
+					},
+					["Fine Axe Components"] = {
+						quantity = 100,
+						setting = "Buy",
+					},
+					["Honed Axe Components"] = {
+						quantity = 100,
+						setting = "Buy",
+					},
+					["Rage Axe"] = {
+						setting = "Keep",
+					},
+				},
 			},
 			BRD = {
 				category = "Class",
@@ -169,7 +209,12 @@ do
 				category = "Class",
 				name = "NEC",
 				conditions = {},
-				items = {},
+				items = {
+					["Bone Chips"] = {
+						setting = "Buy",
+						quantity = 50,
+					},
+				},
 			},
 			PAL = {
 				category = "Class",
@@ -202,7 +247,12 @@ do
 				category = "Class",
 				name = "SHD",
 				conditions = {},
-				items = {},
+				items = {
+					["Bone Chips"] = {
+						setting = "Buy",
+						quantity = 50,
+					},
+				},
 			},
 			SHM = {
 				category = "Class",
@@ -235,6 +285,13 @@ do
 			},
 		},
 		subcommands = {
+			Add = {
+				args = "<name>",
+				name = "Add",
+				trigger = "add",
+				help = "Adds a new %s with the given name",
+				category = "Helper",
+			},
 			Create = {
 				args = "<name>",
 				name = "Create",
@@ -266,6 +323,13 @@ do
 				name = "List",
 				trigger = "list",
 				help = "List all available %s",
+				category = "Helper",
+			},
+			Remove = {
+				args = "<name>",
+				name = "Remove",
+				trigger = "remove",
+				help = "Removes a new %s with the given name",
 				category = "Helper",
 			},
 			Rename = {

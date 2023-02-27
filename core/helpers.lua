@@ -101,6 +101,10 @@ helpers.ready_npc_window = function(handle, npc_class, travel)
 	return true
 end
 
+helpers.ready_bank_window = function(travel)
+	return helpers.ready_npc_window("BigBankWnd", "Banker", travel)
+end
+
 helpers.ready_guild_bank_window = function(travel)
 	return helpers.ready_npc_window("GuildBankWnd", "Guild Banker", travel)
 end

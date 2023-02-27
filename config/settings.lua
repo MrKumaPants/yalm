@@ -98,6 +98,12 @@ settings.init_global_settings = function()
 		global_settings.preferences = default_copy.preferences
 	end
 
+	if global_settings.rules and type(global_settings.rules) == "table" then
+		global_settings.rules = utils.merge(default_copy.rules, global_settings.rules)
+	else
+		global_settings.settings = default_copy.settings
+	end
+
 	if global_settings.settings and type(global_settings.settings) == "table" then
 		global_settings.settings = utils.merge(default_copy.settings, global_settings.settings)
 	else
