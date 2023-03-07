@@ -5,19 +5,20 @@ do
 			"Configuration",
 			"Helper",
 			"Item",
+			"NPC",
 		},
 		commands = {
 			Bank = {
 				name = "Bank",
 				trigger = "bank",
 				help = "Deposits designated items into the personal bank",
-				category = "Item",
+				category = "NPC",
 			},
 			Buy = {
 				name = "Buy",
 				trigger = "buy",
 				help = "Buys designated items from the targeted merchant",
-				category = "Item",
+				category = "NPC",
 			},
 			Character = {
 				name = "Character",
@@ -47,7 +48,7 @@ do
 				name = "Convert",
 				trigger = "convert",
 				help = "Converts other loot systems to YALM. Type \ay/yalm convert help\ax for more information",
-				category = "Item",
+				category = "Configuration",
 			},
 			Destroy = {
 				name = "Destroy",
@@ -55,18 +56,12 @@ do
 				help = "Destroy any designated items in your bags",
 				category = "Item",
 			},
-			Donate = {
-				args = "[guild|me]",
-				name = "Donate",
-				trigger = "donate",
-				help = "Donates designated items",
-				category = "Item",
-			},
+
 			Guild = {
 				name = "Guild",
 				trigger = "guild",
 				help = "Deposits designated items into the guild bank",
-				category = "Item",
+				category = "NPC",
 			},
 			Rule = {
 				name = "Rule",
@@ -78,7 +73,7 @@ do
 				name = "Sell",
 				trigger = "sell",
 				help = "Sells designated items to the targeted merchant",
-				category = "Item",
+				category = "NPC",
 			},
 			SetItem = {
 				args = "<item> <preference> (all|me)",
@@ -92,6 +87,13 @@ do
 				trigger = "simulate",
 				help = "Simulate looting item on cursor or by name",
 				category = "Item",
+			},
+			Tribute = {
+				args = "[guild|me]",
+				name = "Tribute",
+				trigger = "tribute",
+				help = "Donates designated items",
+				category = "NPC",
 			},
 		},
 		conditions = {},
@@ -196,6 +198,28 @@ do
 					["Fire Beetle Eye"] = {
 						setting = "Buy",
 						quantity = 10,
+					},
+				},
+			},
+			ENC = {
+				category = "Class",
+				name = "ENC",
+				conditions = {},
+				items = {
+					["Tiny Dagger"] = {
+						setting = "Buy",
+						quantity = 20,
+					},
+				},
+			},
+			MAG = {
+				category = "Class",
+				name = "MAG",
+				conditions = {},
+				items = {
+					["Malachite"] = {
+						setting = "Buy",
+						quantity = 20,
 					},
 				},
 			},

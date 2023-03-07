@@ -57,7 +57,7 @@ local function print_help()
 	Write.Help("\at[\ax\ayYet Another Loot Manager v%s\ax\at]\ax", version)
 	Write.Help("\axCommands Available:")
 	Write.Help("\t  \ay/yalm help\ax -- Display this help output")
-	Write.Help("\t  \ay/yalm reload\ax -- Reload settings (Currently just restarts the script)")
+	Write.Help("\t  \ay/yalm reload\ax -- Reloads yalm")
 
 	configuration.print_type_help(global_settings, loader.types.commands)
 end
