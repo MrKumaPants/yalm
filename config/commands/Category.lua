@@ -8,16 +8,6 @@ local inspect = require("yalm.lib.inspect")
 
 local command = {}
 
-command.help = function(global_settings, char_settings, type, args)
-	Write.Help("\at[\ax\ay/yalm rule help\ax\at]\ax")
-	Write.Help("\axSubcommands Available:")
-	Write.Help("\t  \ayhelp\ax -- Display this help output")
-	Write.Help("\t  \ayadd <name>\ax -- Creates a new rule with the given name")
-	Write.Help("\t  \ayremove <name>\ax -- Deletes a rule with the given name")
-	Write.Help("\t  \ayset <setting> <value>\ax -- Updates setting to the given value")
-	Write.Help("\axSettings Available:")
-end
-
 command.add = function(global_settings, char_settings, type, args)
 	if not args[3] then
 		Write.Error("No name specified")
@@ -57,16 +47,10 @@ command.remove = function(global_settings, char_settings, type, args)
 end
 
 command.valid_subcommands = {
-	["help"] = {
-		func = command.help,
-	},
-	["add"] = {
-		func = command.add,
-	},
-	["remove"] = {
-		func = command.remove,
-	},
-	"list",
+	help = {},
+	add = {},
+	remove = {},
+	list = {},
 }
 
 local function action(global_settings, char_settings, args)

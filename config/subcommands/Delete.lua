@@ -5,7 +5,7 @@ local configuration = require("yalm.config.configuration")
 
 local utils = require("yalm.lib.utils")
 
-local function action(type, global_settings, char_settings, args)
+local function action(type, subcommands, global_settings, char_settings, args)
 	if not args[3] then
 		Write.Error("No name specified")
 		return

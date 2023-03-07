@@ -119,18 +119,30 @@ end
 
 command.valid_subcommands = {
 	["help"] = {
-		func = command.help,
+		func = {
+			action_func = command.help,
+		},
 	},
 	["lootly"] = {
-		func = command.lootly,
+		func = {
+			action_func = command.lootly,
+		},
 	},
 	["advloot"] = {
-		func = command.advloot,
+		func = {
+			action_func = command.advloot,
+		},
 	},
 }
 
 local function action(global_settings, char_settings, args)
-	configuration.action(command, global_settings, char_settings, configuration.types.command.name, args)
+	configuration.action(
+		command.valid_subcommands,
+		global_settings,
+		char_settings,
+		configuration.types.command.name,
+		args
+	)
 end
 
 return { action_func = action }

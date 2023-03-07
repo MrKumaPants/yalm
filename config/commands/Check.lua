@@ -67,7 +67,7 @@ local function action(global_settings, char_settings, args)
 	end
 
 	if item_name then
-		Write.Info("Checking preference for item on cursor...")
+		Write.Info("Checking preference for \a-t%x\ax...", item_name)
 		check_item(item, global_settings, char_settings)
 
 		if mq.TLO.Cursor.ID() then

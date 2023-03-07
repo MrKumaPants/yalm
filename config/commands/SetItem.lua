@@ -8,11 +8,12 @@ local settings = require("yalm.config.settings")
 local utils = require("yalm.lib.utils")
 
 local function action(global_settings, char_settings, args)
-	local item_name, global_or_character, preference = nil, "me", nil
+	local item_name, global_or_character, preference, scope = nil, "all", nil, nil
 
 	if mq.TLO.Cursor.ID() then
 		item_name = mq.TLO.Cursor.Name()
 		preference = args[2]
+		scope = args[3]
 	end
 
 	if not item_name then
@@ -27,6 +28,7 @@ local function action(global_settings, char_settings, args)
 		end
 
 		preference = args[3]
+		scope = args[4]
 	end
 
 	if not preference then
@@ -42,9 +44,8 @@ local function action(global_settings, char_settings, args)
 	end
 
 	if item_name and preference then
-		global_or_character = args[#args]
-		if not global_or_character and global_or_character == preference then
-			global_or_character = "all"
+		if scope then
+			global_or_character = scope
 		end
 		if global_or_character ~= "all" and global_or_character ~= "me" then
 			Write.Error("Invalid scope for \a-t%s\ax", global_or_character)
@@ -60,11 +61,11 @@ local function action(global_settings, char_settings, args)
 	end
 
 	if global_or_character == "me" then
-		Write.Info("Saving character settings")
+		Write.Info("Saving character settings...")
 		char_settings[loader.types.items][item_name] = preference
 		settings.save_char_settings(char_settings)
 	elseif global_or_character == "all" then
-		Write.Info("Saving global settings")
+		Write.Info("Saving global settings...")
 		settings.update_and_save_global_settings(global_settings, loader.types.items, {
 			[item_name] = preference,
 		})

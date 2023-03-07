@@ -96,7 +96,11 @@ loader.load = function(rule, loot_type, reload)
 		end
 		Write.Info("Registering %s: \ao%s\ax", loot_type, rule.name)
 		rule.loaded = true
-		rule.timestamp = lfs.attributes(loader.filename(rule.name, loot_type)).modification
+
+		local timestamp = lfs.attributes(loader.filename(rule.name, loot_type), "modification")
+		if timestamp then
+			rule.timestamp = timestamp
+		end
 	end
 end
 
@@ -115,11 +119,18 @@ end
 
 loader.has_modified = function(rule, loot_type)
 	local old_timestamp = rule.timestamp or 0
-	local current_timestamp = lfs.attributes(loader.filename(rule.name, loot_type)).modification
-	return current_timestamp > old_timestamp
+	local current_timestamp = lfs.attributes(loader.filename(rule.name, loot_type), "modification")
+	if current_timestamp then
+		return current_timestamp > old_timestamp
+	end
+	return false
 end
 
 loader.manage = function(rule_list, loot_type)
+	if not rule_list then
+		return
+	end
+
 	for _, rule in pairs(rule_list) do
 		local load_event = loader.should_load(loot_type)
 		local has_modified = loader.has_modified(rule, loot_type)

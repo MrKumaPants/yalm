@@ -1,6 +1,6 @@
 local configuration = require("yalm.config.configuration")
 
-local function action(type, global_settings, char_settings, args)
+local function action(type, subcommands, global_settings, char_settings, args)
 	local type_settings = configuration.types[type].settings
 
 	if not args[3] then

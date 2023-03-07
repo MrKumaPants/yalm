@@ -99,7 +99,7 @@ looting.get_member_can_loot = function(item, loot, save_slots, dannet_delay, alw
 end
 
 looting.handle_master_looting = function(global_settings)
-	if not looting.am_i_master_looter() then
+	if not looting.am_i_master_looter() or looting.is_solo_looter() then
 		return
 	end
 
