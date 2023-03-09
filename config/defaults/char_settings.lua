@@ -1,9 +1,6 @@
-do
-	local _ = {
-		items = {},
-		rules = {},
-		save = {},
-		settings = {},
-	}
-	return _
-end
+return {
+	["items"] = {},
+	["rules"] = {},
+	["save"] = {},
+	["settings"] = {},
+}

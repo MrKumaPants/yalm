@@ -31,16 +31,14 @@ local function get_item_preference(item, global_settings, char_settings)
 end
 
 local function check_item(item, global_settings, char_settings)
-	local preference = get_item_preference(item, global_settings, char_settings)
+	if item.Name() then
+		local preference = get_item_preference(item, global_settings, char_settings)
 
-	if not item.Name() then
-		return
-	end
-
-	if preference then
-		Write.Info("\a-t%s\ax passes with %s", item.Name(), utils.get_item_preference_string(preference))
-	else
-		Write.Info("\a-t%s\ax does not match any rules", item.Name())
+		if preference then
+			Write.Info("\a-t%s\ax passes with %s", item.Name(), utils.get_item_preference_string(preference))
+		else
+			Write.Info("\a-t%s\ax does not match any rules", item.Name())
+		end
 	end
 end
 
@@ -66,12 +64,12 @@ local function action(global_settings, char_settings, args)
 		end
 	end
 
-	if item_name then
-		Write.Info("Checking preference for \a-t%x\ax...", item_name)
+	if item and item_name then
+		Write.Info("Checking preference for \a-t%s\ax...", item_name)
 		check_item(item, global_settings, char_settings)
 
 		if mq.TLO.Cursor.ID() then
-			Write.Info("Putting \a-t%s\ax into inventory", item.Name())
+			Write.Info("Putting \a-t%s\ax into inventory", item_name)
 			mq.cmd("/autoinventory")
 		end
 	else

@@ -10,7 +10,7 @@ local valid_subcommands = {
 }
 
 local function action(global_settings, char_settings, args)
-	configuration.action(valid_subcommands, global_settings, char_settings, configuration.types.condition.name, args)
+	configuration.action(valid_subcommands, global_settings, char_settings, configuration.types.subcommand.name, args)
 end
 
 return { action_func = action }

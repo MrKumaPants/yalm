@@ -1,10 +1,9 @@
 local mq = require("mq")
 
-local evaluate = require("yalm.core.evaluate")
-local loader = require("yalm.core.loader")
-
 local configuration = require("yalm.config.configuration")
 local settings = require("yalm.config.settings")
+
+local evaluate = require("yalm.core.evaluate")
 
 local LIP = require("yalm.lib.LIP")
 local utils = require("yalm.lib.utils")
@@ -49,7 +48,7 @@ command.lootly = function(global_settings, char_settings, type, args)
 
 	Write.Info("Saving configuration...")
 
-	settings.update_and_save_global_settings(global_settings, loader.types.items, items)
+	settings.update_and_save_global_settings(global_settings, configuration.types.item.settings_key, items)
 
 	Write.Info("Finished saving")
 

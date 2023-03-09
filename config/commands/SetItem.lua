@@ -1,9 +1,9 @@
 local mq = require("mq")
 
-local evaluate = require("yalm.core.evaluate")
-local loader = require("yalm.core.loader")
-
+local configuration = require("yalm.config.configuration")
 local settings = require("yalm.config.settings")
+
+local evaluate = require("yalm.core.evaluate")
 
 local utils = require("yalm.lib.utils")
 
@@ -62,11 +62,11 @@ local function action(global_settings, char_settings, args)
 
 	if global_or_character == "me" then
 		Write.Info("Saving character settings...")
-		char_settings[loader.types.items][item_name] = preference
+		char_settings[configuration.types.item.settings_key][item_name] = preference
 		settings.save_char_settings(char_settings)
 	elseif global_or_character == "all" then
 		Write.Info("Saving global settings...")
-		settings.update_and_save_global_settings(global_settings, loader.types.items, {
+		settings.update_and_save_global_settings(global_settings, configuration.types.item.settings_key, {
 			[item_name] = preference,
 		})
 	end

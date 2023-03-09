@@ -1,24 +1,10 @@
-local loader = require("yalm.core.loader")
-
 local utils = require("yalm.lib.utils")
 
 local configuration = {
 	types = {
-		global = {
-			name = "global",
-			settings = {
-				always_loot = "boolean",
-				distribute_delay = "time",
-				frequency = "time",
-				save_slots = "number",
-				unmatched_item_delay = "time",
-				dannet_delay = "time",
-				unmatched_item_rule = "string",
-			},
-		},
 		category = {
 			name = "category",
-			loader_type = loader.types.categories,
+			settings_key = "categories",
 		},
 		character = {
 			name = "character",
@@ -32,41 +18,92 @@ local configuration = {
 				unmatched_item_rule = "string",
 			},
 		},
-		condition = {
-			name = "condition",
-			loader_type = loader.types.conditions,
-			settings = {
-				category = "string",
-			},
-		},
 		command = {
 			name = "command",
-			loader_type = loader.types.commands,
+			settings_key = "commands",
 			settings = {
 				args = "string",
 				category = "string",
 				help = "string",
 				trigger = "string",
 			},
+			should_load = true,
+		},
+		condition = {
+			name = "condition",
+			settings_key = "conditions",
+			settings = {
+				category = "string",
+			},
+			should_load = true,
+		},
+		helper = {
+			name = "helper",
+			settings_key = "helpers",
+			settings = {
+				category = "string",
+			},
+			should_load = true,
+		},
+		item = {
+			name = "item",
+			settings_key = "items",
+			settings = {
+				category = "string",
+				list = "string",
+				quantity = "number|string",
+				setting = "string",
+			},
+		},
+		preference = {
+			name = "preference",
+			settings_key = "preferences",
+			settings = {
+				leave = "boolean",
+			},
 		},
 		rule = {
 			name = "rule",
-			loader_type = loader.types.rules,
+			settings_key = "rules",
 			settings = {
 				category = "string",
 			},
 		},
+		setting = {
+			name = "settings",
+			settings = {
+				always_loot = "boolean",
+				distribute_delay = "time",
+				frequency = "time",
+				save_slots = "number",
+				unmatched_item_delay = "time",
+				dannet_delay = "time",
+				unmatched_item_rule = "string",
+			},
+			settings_key = "settings",
+		},
+		subcommand = {
+			name = "subcommand",
+			settings_key = "subcommands",
+			settings = {
+				args = "string",
+				category = "string",
+				help = "string",
+				trigger = "string",
+			},
+			should_load = true,
+		},
 	},
 }
 
-configuration.print_type_help = function(global_settings, loader_type, type)
+configuration.print_type_help = function(global_settings, settings_key, type)
 	local category_map = {}
 
-	if not global_settings[loader_type] then
+	if not global_settings[settings_key] then
 		return
 	end
 
-	for _, command in pairs(global_settings[loader_type]) do
+	for _, command in pairs(global_settings[settings_key]) do
 		local category = command.category or "Uncategorized"
 		if not category_map[category] then
 			category_map[category] = {}

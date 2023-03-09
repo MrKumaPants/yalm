@@ -36,7 +36,7 @@ local loader = require("yalm.core.loader")
 
 local utils = require("yalm.lib.utils")
 
-local version = "0.8.8"
+local version = "0.9.1"
 
 -- application state
 local state = {
@@ -59,7 +59,7 @@ local function print_help()
 	Write.Help("\t  \ay/yalm help\ax -- Display this help output")
 	Write.Help("\t  \ay/yalm reload\ax -- Reloads yalm")
 
-	configuration.print_type_help(global_settings, loader.types.commands)
+	configuration.print_type_help(global_settings, configuration.types.command.settings_key)
 end
 
 local function cmd_handler(...)
@@ -110,14 +110,14 @@ end
 local function main()
 	initialize()
 
-	while not state.terminate do
+	while not state.terminate and mq.TLO.MacroQuest.GameState() == "INGAME" do
 		if not mq.TLO.Me.Dead() then
 			global_settings, char_settings = settings.reload_settings(global_settings, char_settings)
 
-			loader.manage(global_settings.commands, loader.types.commands)
-			loader.manage(global_settings.conditions, loader.types.conditions)
-			loader.manage(global_settings.functions, loader.types.functions)
-			loader.manage(global_settings.subcommands, loader.types.subcommands)
+			loader.manage(global_settings.commands, configuration.types.command)
+			loader.manage(global_settings.conditions, configuration.types.condition)
+			loader.manage(global_settings.helpers, configuration.types.helpers)
+			loader.manage(global_settings.subcommands, configuration.types.subcommand)
 
 			looting.handle_master_looting(global_settings)
 			looting.handle_solo_looting(global_settings)

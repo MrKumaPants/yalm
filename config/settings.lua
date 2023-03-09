@@ -3,8 +3,6 @@ local mq = require("mq")
 local PackageMan = require("mq/PackageMan")
 local lfs = PackageMan.Require("luafilesystem", "lfs")
 
-local loader = require("yalm.core.loader")
-
 local utils = require("yalm.lib.utils")
 
 local settings = {}
@@ -92,10 +90,16 @@ settings.init_global_settings = function()
 		global_settings.commands = default_copy.commands
 	end
 
-	if global_settings.functions and type(global_settings.functions) == "table" then
-		global_settings.functions = utils.merge(default_copy.functions, global_settings.functions)
+	if global_settings.conditions and type(global_settings.conditions) == "table" then
+		global_settings.conditions = utils.merge(default_copy.conditions, global_settings.conditions)
 	else
-		global_settings.functions = default_copy.functions
+		global_settings.conditions = default_copy.conditions
+	end
+
+	if global_settings.helpers and type(global_settings.helpers) == "table" then
+		global_settings.helpers = utils.merge(default_copy.helpers, global_settings.helpers)
+	else
+		global_settings.helpers = default_copy.helpers
 	end
 
 	if global_settings.preferences and type(global_settings.preferences) == "table" then
@@ -193,28 +197,16 @@ settings.reload_settings = function(global_settings, char_settings)
 		return global_settings, char_settings
 	end
 
-	if global_settings.categories and type(global_settings.categories) == "table" then
-		new_global_settings.categories = utils.table_concat(new_global_settings.categories, global_settings.categories)
-	end
-
 	if global_settings.commands and type(global_settings.commands) == "table" then
 		new_global_settings.commands = utils.merge(new_global_settings.commands, global_settings.commands)
 	end
 
-	if global_settings.functions and type(global_settings.functions) == "table" then
-		new_global_settings.functions = utils.merge(new_global_settings.functions, global_settings.functions)
+	if global_settings.conditions and type(global_settings.conditions) == "table" then
+		new_global_settings.conditions = utils.merge(new_global_settings.conditions, global_settings.conditions)
 	end
 
-	if global_settings.preferences and type(global_settings.preferences) == "table" then
-		new_global_settings.preferences = utils.merge(new_global_settings.preferences, global_settings.preferences)
-	end
-
-	if global_settings.rules and type(global_settings.rules) == "table" then
-		new_global_settings.rules = utils.merge(new_global_settings.rules, global_settings.rules)
-	end
-
-	if global_settings.settings and type(global_settings.settings) == "table" then
-		new_global_settings.settings = utils.merge(new_global_settings.settings, global_settings.settings)
+	if global_settings.helpers and type(global_settings.helpers) == "table" then
+		new_global_settings.helpers = utils.merge(new_global_settings.helpers, global_settings.helpers)
 	end
 
 	if global_settings.subcommands and type(global_settings.subcommands) == "table" then
@@ -232,58 +224,50 @@ settings.save_char_settings = function(filename, char_settings)
 	mq.pickle(filename, char_settings)
 end
 
-settings.remove_global_settings = function(loader_type, key)
-	if not loader.types[loader_type] then
-		Write.Error("%s is not a valid global key", loader_type)
-		return
-	end
-
+settings.remove_global_settings = function(settings_key, key)
 	local global_settings = settings.load_global_settings()
 
-	if type(key) == "number" then
-		table.remove(global_settings[loader_type], key)
+	if type(global_settings[settings_key][key]) == "table" then
+		global_settings[settings_key][key] = nil
 	else
-		global_settings[loader_type][key] = nil
+		local index = utils.find(global_settings[settings_key], key)
+		table.remove(global_settings[settings_key], index)
 	end
 
 	settings.save_global_settings(settings.get_global_settings_filename(), global_settings)
 end
 
-settings.set_global_settings = function(loader_type, tables)
-	if not loader.types[loader_type] then
-		Write.Error("%s is not a valid global key", loader_type)
-		return
-	end
-
+settings.set_global_settings = function(settings_key, tables)
 	local global_settings = settings.load_global_settings()
-	utils.merge(global_settings[loader_type], tables)
+	utils.merge(global_settings[settings_key], tables)
 
 	settings.save_global_settings(settings.get_global_settings_filename(), global_settings)
 end
 
-settings.remove_and_save_global_settings = function(global_settings, loader_type, key)
-	if not loader.types[loader_type] then
-		Write.Error("%s is not a valid global key", loader_type)
+settings.remove_and_save_global_settings = function(global_settings, settings_key, key)
+	if not global_settings[settings_key] then
+		Write.Error("%s is not a valid global key", settings_key)
 		return
 	end
 
-	if type(key) == "number" then
-		table.remove(global_settings[loader_type], key)
+	if type(global_settings[settings_key][key]) == "table" then
+		global_settings[settings_key][key] = nil
 	else
-		global_settings[loader_type][key] = nil
+		local index = utils.find(global_settings[settings_key], key)
+		table.remove(global_settings[settings_key], index)
 	end
 
-	settings.remove_global_settings(loader_type, key)
+	settings.remove_global_settings(settings_key, key)
 end
 
-settings.update_and_save_global_settings = function(global_settings, loader_type, tables)
-	if not loader.types[loader_type] then
-		Write.Error("%s is not a valid global key", loader_type)
+settings.update_and_save_global_settings = function(global_settings, settings_key, tables)
+	if not global_settings[settings_key] then
+		Write.Error("%s is not a valid global key", settings_key)
 		return
 	end
 
-	utils.merge(global_settings[loader_type], tables)
-	settings.set_global_settings(loader_type, tables)
+	utils.merge(global_settings[settings_key], tables)
+	settings.set_global_settings(settings_key, tables)
 end
 
 return settings
