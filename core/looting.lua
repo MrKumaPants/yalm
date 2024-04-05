@@ -103,6 +103,10 @@ looting.handle_master_looting = function(global_settings)
 		return
 	end
 
+	if looting.get_group_or_raid_tlo() == "Raid" and global_settings.settings.do_raid_loot == false then
+		return
+	end
+
 	local loot_count_tlo, loot_list_tlo = looting.get_loot_tlos()
 
 	if not looting.can_i_loot(loot_count_tlo) then

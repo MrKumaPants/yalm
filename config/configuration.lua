@@ -73,11 +73,12 @@ local configuration = {
 			name = "settings",
 			settings = {
 				always_loot = "boolean",
+				dannet_delay = "time",
 				distribute_delay = "time",
+				do_raid_loot = "boolean",
 				frequency = "time",
 				save_slots = "number",
 				unmatched_item_delay = "time",
-				dannet_delay = "time",
 				unmatched_item_rule = "string",
 			},
 			settings_key = "settings",

@@ -1,7 +1,6 @@
 --- @type Mq
 local mq = require("mq")
-local PackageMan = require("mq/PackageMan")
-local lfs = PackageMan.Require("luafilesystem", "lfs")
+local lfs = require("lfs")
 
 local configuration = require("yalm.config.configuration")
 

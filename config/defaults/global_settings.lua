@@ -6,6 +6,7 @@ return {
 		[4] = "Item",
 		[5] = "NPC",
 	},
+	["character"] = {},
 	["commands"] = {
 		["Bank"] = {
 			["name"] = "Bank",
@@ -376,11 +377,12 @@ return {
 	},
 	["settings"] = {
 		["always_loot"] = true,
+		["dannet_delay"] = 250,
 		["distribute_delay"] = "1s",
+		["do_raid_loot"] = true,
 		["frequency"] = 250,
 		["save_slots"] = 3,
 		["unmatched_item_delay"] = "10s",
-		["dannet_delay"] = 250,
 		["unmatched_item_rule"] = {
 			["setting"] = "Keep",
 		},

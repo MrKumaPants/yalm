@@ -1,11 +1,12 @@
 ---@type Mq
 local mq = require("mq")
-local PackageMan = require("mq/PackageMan")
-local lfs = PackageMan.Require("luafilesystem", "lfs")
+local lfs = require("lfs")
 
 local utils = require("yalm.lib.utils")
 
 local settings = {}
+
+local inspect = require("yalm.lib.inspect")
 
 settings.get_char_settings_filename = function(character)
 	local name = mq.TLO.Me.CleanName():lower()

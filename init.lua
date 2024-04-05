@@ -3,26 +3,16 @@ yalm -- fuddles
 ]]
 ---@type Mq
 local mq = require("mq")
+--- @type ImGui
+require("ImGui")
+
 local PackageMan = require("mq/PackageMan")
 local Utils = require("mq/Utils")
 
 require("yalm.lib.Write")
 
-local sql = Utils.Library.Include("lsqlite3")
-if not sql then
-	if PackageMan.Install("lsqlite3") == 2 then
-		print("User canceled the install, cannot proceed")
-		mq.exit()
-	end
-end
-
-local lfs = Utils.Library.Include("lfs")
-if not lfs then
-	if PackageMan.Install("lfs") == 2 then
-		print("User canceled the install, cannot proceed")
-		mq.exit()
-	end
-end
+local sql = PackageMan.Require("lsqlite3")
+local lfs = PackageMan.Require("luafilesystem", "lfs")
 
 require("yalm.lib.database")
 
@@ -30,31 +20,17 @@ Database.database = assert(Database.OpenDatabase())
 
 local configuration = require("yalm.config.configuration")
 local settings = require("yalm.config.settings")
+local state = require("yalm.config.state")
 
 local looting = require("yalm.core.looting")
 local loader = require("yalm.core.loader")
 
 local utils = require("yalm.lib.utils")
 
-local version = "0.9.1"
-
--- application state
-local state = {
-	terminate = false,
-	command_running = nil,
-	ui = {
-		main = {
-			title = ("Yet Another Loot Manager (v%s)###yalm"):format(version),
-			open_ui = true,
-			draw_ui = true,
-		},
-	},
-}
-
 local global_settings, char_settings
 
 local function print_help()
-	Write.Help("\at[\ax\ayYet Another Loot Manager v%s\ax\at]\ax", version)
+	Write.Help("\at[\ax\ayYet Another Loot Manager v%s\ax\at]\ax", state.version)
 	Write.Help("\axCommands Available:")
 	Write.Help("\t  \ay/yalm help\ax -- Display this help output")
 	Write.Help("\t  \ay/yalm reload\ax -- Reloads yalm")

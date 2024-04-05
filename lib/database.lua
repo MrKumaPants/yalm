@@ -1,8 +1,7 @@
 --- @type Mq
 local mq = require("mq")
 
-local PackageMan = require("mq/PackageMan")
-local sql = PackageMan.Require("lsqlite3")
+local sql = require("lsqlite3")
 
 Database = {
 	database = nil,
