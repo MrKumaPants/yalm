@@ -1,4 +1,4 @@
-local version = "0.9.2"
+local version = "0.10.0"
 
 local state = {
 	terminate = false,
