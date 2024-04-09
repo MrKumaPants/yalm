@@ -115,17 +115,17 @@ end
 
 helpers.ready_tribute_window = function(travel, tribute_master)
 	if
-		tribute_master == "me"
-		or mq.TLO.NearestSpawn('class "Tribute Master"').Class() == "Tribute Master"
-		or mq.TLO.Target.Class() == "Tribute Master"
+			tribute_master == "me"
+			or (tribute_master == nil and mq.TLO.Target.Class() ~= "Guild Tribute Master" and mq.TLO.NearestSpawn('class "Tribute Master"').Class() == "Tribute Master")
+			or (tribute_master == nil and mq.TLO.Target.Class() == "Tribute Master")
 	then
-		return helpers.ready_npc_window("TributeMasterWnd", "Tribute Master", travel)
+			return helpers.ready_npc_window("TributeMasterWnd", "Tribute Master", travel)
 	elseif
-		tribute_master == "guild"
-		or mq.TLO.NearestSpawn('class "Guild Tribute Master"').Class() == "Guild Tribute Master"
-		or mq.TLO.Target.Class() == "Guild Tribute Master"
+			tribute_master == "guild"
+			or (tribute_master == nil and mq.TLO.Target.Class() ~= "Tribute Master" and mq.TLO.NearestSpawn('class "Guild Tribute Master"').Class() == "Guild Tribute Master")
+			or (tribute_master == nil and mq.TLO.Target.Class() == "Guild Tribute Master")
 	then
-		return helpers.ready_npc_window("TributeMasterWnd", "Guild Tribute Master", travel)
+			return helpers.ready_npc_window("TributeMasterWnd", "Guild Tribute Master", travel)
 	end
 
 	return false
