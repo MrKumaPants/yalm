@@ -60,8 +60,8 @@ end
 
 local function action(global_settings, char_settings, args)
 	if args[2] then
-		if args[2] ~= "guild" and args[2] == "me" then
-			Write.Error("That is not a valid option")
+		if not (args[2] == "guild" or args[2] == "me") then
+				Write.Error("That is not a valid option")
 		end
 	end
 
