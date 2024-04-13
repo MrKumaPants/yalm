@@ -2,6 +2,8 @@
 local mq = require("mq")
 local lfs = require("lfs")
 
+local inspect = require("yalm.lib.inspect")
+
 local utils = {}
 
 utils.copy_file = function(source, dest)
@@ -195,13 +197,18 @@ end
 utils.get_item_preference_string = function(preference)
 	local message = ("preference: \ao%s\ax"):format(preference.setting)
 
+	if preference.name then
+		message = message .. (", condition: \ao%s\ax"):format(preference.name or "")
+	end
+
 	if preference.quantity then
-		message = message .. (", quantity: \ao%s\ax"):format(preference.quantity and preference.quantity or "")
+		message = message .. (", quantity: \ao%s\ax"):format(preference.quantity or "")
 	end
 
 	if preference.list then
 		message = message .. (", list: \ao%s\ax"):format(preference.list and table.concat(preference.list, ",") or "")
 	end
+
 
 	return message
 end
