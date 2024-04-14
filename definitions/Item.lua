@@ -256,6 +256,10 @@ Item.Name = function()
 	return Item.item_db.name
 end
 
+Item.NoDrop = function()
+	return Item.item_db.nodrop
+end
+
 Item.NoRent = function()
 	return Item.item_db.norent == 0
 end
