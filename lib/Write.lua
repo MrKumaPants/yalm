@@ -1,6 +1,8 @@
 --- @type Mq
 local mq = require("mq")
 
+local inspect = require("yalm.lib.inspect")
+
 Write = { _version = "1.6" }
 
 Write.usecolors = true
@@ -106,6 +108,10 @@ end
 
 function Write.Help(message, ...)
 	Output("help", string.format(message, ...))
+end
+
+function Write.Inspect(object)
+	Output("debug", inspect(object))
 end
 
 return Write
