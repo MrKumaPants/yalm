@@ -179,6 +179,16 @@ utils.plugin_check = function()
 		Write.Info("Plugin MQ2DanNet is required. Loading it now.")
 		mq.cmd("/plugin mq2dannet noauto")
 	end
+
+	if not utils.file_exists(("%s/MQ2LinkDB.db"):format(mq.TLO.MacroQuest.Path("resources"))) then
+		if not mq.TLO.Plugin("mq2linkdb").IsLoaded() then
+			Write.Info("Plugin MQ2LinkDB is required. Loading it now.")
+			mq.cmd("/plugin mq2linkdb noauto")
+		end
+
+		Write.Info("MQ2LinkDB.db does not exist. Creating it now.")
+		mq.cmd("/link /import")
+	end
 end
 
 utils.get_zone_peer_group = function()

@@ -16,8 +16,6 @@ local lfs = PackageMan.Require("luafilesystem", "lfs")
 
 require("yalm.lib.database")
 
-Database.database = assert(Database.OpenDatabase())
-
 local configuration = require("yalm.config.configuration")
 local settings = require("yalm.config.settings")
 local state = require("yalm.config.state")
@@ -72,6 +70,8 @@ end
 
 local function initialize()
 	utils.plugin_check()
+
+	Database.database = assert(Database.OpenDatabase())
 
 	if not mq.TLO.Me.UseAdvancedLooting() then
 		Write.Error("You must have AdvLoot enabled")

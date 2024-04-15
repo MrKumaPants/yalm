@@ -69,8 +69,8 @@ evaluate.check_loot_conditions = function(item, loot_helpers, loot_conditions, s
 			if success and result then
 				preference = evaluate.convert_rule_preference(condition_item, loot_helpers, condition)
 				break
-			elseif not success then
-				Write.Warn("Running condition failed: %s - %s", condition.name, result)
+			elseif not success and result then
+				Write.Error(result)
 			end
 		end
 	end
