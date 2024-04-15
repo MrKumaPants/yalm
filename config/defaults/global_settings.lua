@@ -381,6 +381,7 @@ return {
 		["distribute_delay"] = "1s",
 		["do_raid_loot"] = true,
 		["frequency"] = 250,
+		["log_level"] = "info",
 		["save_slots"] = 3,
 		["unmatched_item_delay"] = "10s",
 		["unmatched_item_rule"] = {

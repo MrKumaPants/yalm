@@ -31,7 +31,7 @@ Database.OpenDatabase = function(path)
 end
 
 Database.QueryDatabaseForItemId = function(item_id)
-	local item_db
+	local item_db = nil
 	for row in Database.database:nrows(string.format("select * from raw_item_data_315 where id = %s", item_id)) do
 		item_db = row
 		break

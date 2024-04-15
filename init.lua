@@ -81,6 +81,8 @@ local function initialize()
 	mq.bind("/yalm", cmd_handler)
 
 	global_settings, char_settings = settings.init_settings()
+
+	Write.loglevel = global_settings.settings.log_level
 end
 
 local function main()

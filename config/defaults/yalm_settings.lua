@@ -12,5 +12,6 @@ return {
 		["unmatched_item_rule"] = {
 			["setting"] = "Keep",
 		},
+		["log_level"] = "info"
 	},
 }

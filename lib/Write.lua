@@ -111,7 +111,10 @@ function Write.Help(message, ...)
 end
 
 function Write.Inspect(object)
-	Output("debug", inspect(object))
+	local output = inspect(object)
+	for line in string.gmatch(output .. "\n", "(.-)\n") do
+		Output("debug", line)
+	end
 end
 
 return Write
