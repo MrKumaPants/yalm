@@ -257,7 +257,7 @@ Item.Name = function()
 end
 
 Item.NoDrop = function()
-	return Item.item_db.nodrop
+	return Item.item_db.nodrop == 0
 end
 
 Item.NoRent = function()
