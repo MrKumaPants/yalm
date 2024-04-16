@@ -206,9 +206,6 @@ evaluate.get_loot_item = function(item)
 
 		if not loot_item.item_db then
 			Write.Error("Item \at%s\ax does not exist", item.Name())
-		end
-
-		if not loot_item.item_db then
 			loot_item = nil
 		end
 	end
@@ -217,11 +214,11 @@ evaluate.get_loot_item = function(item)
 end
 
 evaluate.get_loot_preference = function(item, loot, char_settings, unmatched_item_rule)
-	local preference
+	local preferenceX
 
 	local loot_item = evaluate.get_loot_item(item)
 
-	if loot_item != nil then
+	if loot_item ~= nil then
 		if char_settings[configuration.types.item.settings_key] then
 			preference = evaluate.check_loot_items(loot_item, loot.helpers, char_settings[configuration.types.item.settings_key])
 		end
