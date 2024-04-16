@@ -60,24 +60,6 @@ evaluate.check_loot_conditions = function(item, loot_helpers, loot_conditions, s
 		end
 
 		if func then
-			local condition_item = item
-			-- this is an advlootitem
-			if item.Index and item.ID() then
-				condition_item = Item:new(nil, database.QueryDatabaseForItemId(item.ID()))
-
-				if not condition_item.item_db then
-					Write.Error("Item id \at%s\ax does not exist", item.ID())
-					condition_item = Item:new(nil, database.QueryDatabaseForItemName(item.Name()))
-				end
-
-				if not condition_item.item_db then
-					Write.Error("Item \at%s\ax does not exist", item.Name())
-				end
-
-				if not condition_item.item_db then
-					return nil
-				end
-			end
 			local success, result = pcall(func, condition_item)
 			if success and result then
 				preference = evaluate.convert_rule_preference(condition_item, loot_helpers, condition)
@@ -210,25 +192,53 @@ evaluate.get_member_char_settings = function(member, save_slots, dannet_delay, a
 	return char_settings
 end
 
+evaluate.get_loot_item = function(item)
+	local loot_item = item
+
+	-- this is an advlootitem
+	if item.Index and item.ID() then
+		loot_item = Item:new(nil, database.QueryDatabaseForItemId(item.ID()))
+
+		if not loot_item.item_db then
+			Write.Error("Item id \at%s\ax does not exist", item.ID())
+			loot_item = Item:new(nil, database.QueryDatabaseForItemName(item.Name()))
+		end
+
+		if not loot_item.item_db then
+			Write.Error("Item \at%s\ax does not exist", item.Name())
+		end
+
+		if not loot_item.item_db then
+			loot_item = nil
+		end
+	end
+
+	return loot_item
+end
+
 evaluate.get_loot_preference = function(item, loot, char_settings, unmatched_item_rule)
 	local preference
 
-	if char_settings[configuration.types.item.settings_key] then
-		preference = evaluate.check_loot_items(item, loot.helpers, char_settings[configuration.types.item.settings_key])
-	end
+	local loot_item = evaluate.get_loot_item(item)
 
-	if preference == nil and loot.items then
-		preference = evaluate.check_loot_items(item, loot.helpers, loot.items)
-	end
+	if loot_item != nil then
+		if char_settings[configuration.types.item.settings_key] then
+			preference = evaluate.check_loot_items(loot_item, loot.helpers, char_settings[configuration.types.item.settings_key])
+		end
 
-	if preference == nil and char_settings[configuration.types.rule.settings_key] then
-		preference = evaluate.check_loot_rules(
-			item,
-			loot.helpers,
-			loot.conditions,
-			loot.rules,
-			char_settings[configuration.types.rule.settings_key]
-		)
+		if preference == nil and loot.items then
+			preference = evaluate.check_loot_items(loot_item, loot.helpers, loot.items)
+		end
+
+		if preference == nil and char_settings[configuration.types.rule.settings_key] then
+			preference = evaluate.check_loot_rules(
+				loot_item,
+				loot.helpers,
+				loot.conditions,
+				loot.rules,
+				char_settings[configuration.types.rule.settings_key]
+			)
+		end
 	end
 
 	if preference == nil and unmatched_item_rule then
