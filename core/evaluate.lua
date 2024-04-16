@@ -64,6 +64,19 @@ evaluate.check_loot_conditions = function(item, loot_helpers, loot_conditions, s
 			-- this is an advlootitem
 			if item.Index and item.ID() then
 				condition_item = Item:new(nil, database.QueryDatabaseForItemId(item.ID()))
+
+				if not condition_item.item_db then
+					Write.Error("Item id \at%s\ax does not exist", item.ID())
+					condition_item = Item:new(nil, database.QueryDatabaseForItemName(item.Name()))
+				end
+
+				if not condition_item.item_db then
+					Write.Error("Item \at%s\ax does not exist", item.Name())
+				end
+
+				if not condition_item.item_db then
+					return nil
+				end
 			end
 			local success, result = pcall(func, condition_item)
 			if success and result then
