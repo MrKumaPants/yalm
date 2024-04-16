@@ -214,7 +214,7 @@ evaluate.get_loot_item = function(item)
 end
 
 evaluate.get_loot_preference = function(item, loot, char_settings, unmatched_item_rule)
-	local preferenceX
+	local preference
 
 	local loot_item = evaluate.get_loot_item(item)
 
