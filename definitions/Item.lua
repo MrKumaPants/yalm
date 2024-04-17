@@ -29,8 +29,16 @@ function Item:new(o, item_db)
 	return o
 end
 
+Item.Lore = function()
+    return Item.item_db.loregroup ~= 0
+end
+
+Item.LoreEquip = function()
+    return Item.item_db.loreequippedgroup ~= 0
+end
+
 Item.AugSlot1 = function()
-	return self.item_db.augslot1type
+	return Item.item_db.augslot1type
 end
 
 Item.AugSlot2 = function()
